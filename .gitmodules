@@ -1,0 +1,6 @@
+[submodule "ZEKRA-STARK"]
+	path = ZEKRA-STARK
+	url = git@github.com:Jglez2330/ZEKRA-STARK.git
+[submodule "poseidon-hash"]
+	path = poseidon-hash
+	url = https://github.com/ingonyama-zk/poseidon-hash

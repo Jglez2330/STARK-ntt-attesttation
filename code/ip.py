@@ -14,6 +14,10 @@ class ProofStream:
         obj = self.objects[self.read_index]
         self.read_index += 1
         return obj
+    def get_index( self, i):
+        assert i < len(self.objects), "ProofStream: index out of range."
+        return self.objects[i]
+
 
     def serialize( self ):
         return pickle.dumps(self.objects)

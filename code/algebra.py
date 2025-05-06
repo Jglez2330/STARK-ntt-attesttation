@@ -94,28 +94,32 @@ class Field:
         return FieldElement(left.value * a % self.p, self)
 
     def main():
-        p = 1 + 407 * ( 1 << 119 ) # 1 + 11 * 37 * 2^119
+        p = 2**251 + 17*2**192 + 1
         return Field(p)
 
     def generator( self ):
-        assert(self.p == 1 + 407 * ( 1 << 119 )), "Do not know generator for other fields beyond 1+407*2^119"
-        return FieldElement(85408008396924667383611388730472331217, self)
+        assert(self.p == 2**251 + 17*2**192 + 1), "Do not know generator for other fields beyond 2**251 + 17*2**192 + 1."
+        return FieldElement(3, self)
 
     def primitive_nth_root( self, n ):
-        if self.p == 1 + 407 * ( 1 << 119 ):
-            assert(n <= 1 << 119 and (n & (n-1)) == 0), "Field does not have nth root of unity where n > 2^119 or not power of two."
-            root = FieldElement(85408008396924667383611388730472331217, self)
-            order = 1 << 119
+        if self.p == 2**251 + 17*2**192 + 1:
+            assert(n <= 2**251 + 17*2**192 and (n & (n-1)) == 0), "Field does not have nth root of unity where n > 2^119 or not power of two."
+            root = FieldElement(3, self)
+            order = 2**251 + 17*2**192
             while order != n:
                 root = root^2
                 order = order/2
             return root
         else:
             assert(False), "Unknown field, can't return root of unity."
-            
+
     def sample( self, byte_array ):
         acc = 0
+        i = 0
         for b in byte_array:
+            i = i + 1
+            if i == 512:
+                break
             acc = (acc << 8) ^ int(b)
         return FieldElement(acc % self.p, self)
 
