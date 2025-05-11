@@ -341,101 +341,107 @@ Another difference is that the transition constraints have $2\mathsf{w}+1$ varia
 Last is the verifier. It comes with the same caveat and exercise.
 
 ```python
-    def verify( self, proof, transition_constraints, boundary, proof_stream=None ):
-        H = blake2b
+    def verify(self, proof, transition_constraints, boundary, proof_stream=None):
+    H = blake2b
 
-        # infer trace length from boundary conditions
-        original_trace_length = 1 + max(c for c, r, v in boundary)
-        randomized_trace_length = original_trace_length + self.num_randomizers
+    # infer trace length from boundary conditions
+    original_trace_length = 1 + max(c for c, r, v in boundary)
+    randomized_trace_length = original_trace_length + self.num_randomizers
 
-        # deserialize with right proof stream
-        if proof_stream == None:
-            proof_stream = ProofStream()
-        proof_stream = proof_stream.deserialize(proof)
+    # deserialize with right proof stream
+    if proof_stream == None:
+        proof_stream = ProofStream()
+    proof_stream = proof_stream.deserialize(proof)
 
-        # get Merkle roots of boundary quotient codewords
-        boundary_quotient_roots = []
-        for s in range(self.num_registers):
-            boundary_quotient_roots = boundary_quotient_roots + [proof_stream.pull()]
+    # get Merkle roots of boundary quotient codewords
+    boundary_quotient_roots = []
+    for s in range(self.num_registers):
+        boundary_quotient_roots = boundary_quotient_roots + [proof_stream.pull()]
 
-        # get Merkle root of randomizer polynomial
-        randomizer_root = proof_stream.pull()
+    # get Merkle root of randomizer polynomial
+    randomizer_root = proof_stream.pull()
 
-        # get weights for nonlinear combination
-        weights = self.sample_weights(1 + 2*len(transition_constraints) + 2*len(self.boundary_interpolants(boundary)), proof_stream.verifier_fiat_shamir())
+    # get weights for nonlinear combination
+    weights = self.sample_weights(1 + 2 * len(transition_constraints) + 2 * len(self.boundary_interpolants(boundary)),
+                                  proof_stream.verifier_fiat_shamir())
 
-        # verify low degree of combination polynomial
-        polynomial_values = []
-        verifier_accepts = self.fri.verify(proof_stream, polynomial_values)
-        polynomial_values.sort(key=lambda iv : iv[0])
-        if not verifier_accepts:
-            return False
+    # verify low degree of combination polynomial
+    polynomial_values = []
+    verifier_accepts = self.fri.verify1(proof_stream, polynomial_values)
+    polynomial_values.sort(key=lambda iv: iv[0])
+    if not verifier_accepts:
+        return False
 
-        indices = [i for i,v in polynomial_values]
-        values = [v for i,v in polynomial_values]
+    indices = [i for i, v in polynomial_values]
+    values = [v for i, v in polynomial_values]
 
-        # read and verify leafs, which are elements of boundary quotient codewords
-        duplicated_indices = [i for i in indices] + [(i + self.expansion_factor) % self.fri.domain_length for i in indices]
-        leafs = []
-        for r in range(len(boundary_quotient_roots)):
-            leafs = leafs + [dict()]
-            for i in duplicated_indices:
-                leafs[r][i] = proof_stream.pull()
-                path = proof_stream.pull()
-                verifier_accepts = verifier_accepts and Merkle.verify(boundary_quotient_roots[r], i, path, leafs[r][i])
-                if not verifier_accepts:
-                    return False
-
-        # read and verify randomizer leafs
-        randomizer = dict()
-        for i in indices:
-            randomizer[i] = proof_stream.pull()
+    # read and verify leafs, which are elements of boundary quotient codewords
+    duplicated_indices = [i for i in indices] + [(i + self.expansion_factor) % self.fri.domain_length for i in indices]
+    leafs = []
+    for r in range(len(boundary_quotient_roots)):
+        leafs = leafs + [dict()]
+        for i in duplicated_indices:
+            leafs[r][i] = proof_stream.pull()
             path = proof_stream.pull()
-            verifier_accepts = verifier_accepts and Merkle.verify(randomizer_root, i, path, randomizer[i])
-
-        # verify leafs of combination polynomial
-        for i in range(len(indices)):
-            current_index = indices[i] # do need i
-
-            # get trace values by applying a correction to the boundary quotient values (which are the leafs)
-            domain_current_index = self.generator * (self.omega^current_index)
-            next_index = (current_index + self.expansion_factor) % self.fri.domain_length
-            domain_next_index = self.generator * (self.omega^next_index)
-            current_trace = [self.field.zero() for s in range(self.num_registers)]
-            next_trace = [self.field.zero() for s in range(self.num_registers)]
-            for s in range(self.num_registers):
-                zerofier = self.boundary_zerofiers(boundary)[s]
-                interpolant = self.boundary_interpolants(boundary)[s]
-
-                current_trace[s] = leafs[s][current_index] * zerofier.evaluate(domain_current_index) + interpolant.evaluate(domain_current_index)
-                next_trace[s] = leafs[s][next_index] * zerofier.evaluate(domain_next_index) + interpolant.evaluate(domain_next_index)
-
-            point = [domain_current_index] + current_trace + next_trace
-            transition_constraints_values = [transition_constraints[s].evaluate(point) for s in range(len(transition_constraints))]
-
-            # compute nonlinear combination
-            counter = 0
-            terms = []
-            terms += [randomizer[current_index]]
-            for s in range(len(transition_constraints_values)):
-                tcv = transition_constraints_values[s]
-                quotient = tcv / self.transition_zerofier().evaluate(domain_current_index)
-                terms += [quotient]
-                shift = self.max_degree(transition_constraints) - self.transition_quotient_degree_bounds(transition_constraints)[s]
-                terms += [quotient * (domain_current_index^shift)]
-            for s in range(self.num_registers):
-                bqv = leafs[s][current_index] # boundary quotient value
-                terms += [bqv]
-                shift = self.max_degree(transition_constraints) - self.boundary_quotient_degree_bounds(randomized_trace_length, boundary)[s]
-                terms += [bqv * (domain_current_index^shift)]
-            combination = reduce(lambda a, b : a+b, [terms[j] * weights[j] for j in range(len(terms))], self.field.zero())
-
-            # verify against combination polynomial value
-            verifier_accepts = verifier_accepts and (combination == values[i])
+            verifier_accepts = verifier_accepts and Merkle.verify1(boundary_quotient_roots[r], i, path, leafs[r][i])
             if not verifier_accepts:
                 return False
 
-        return verifier_accepts
+    # read and verify randomizer leafs
+    randomizer = dict()
+    for i in indices:
+        randomizer[i] = proof_stream.pull()
+        path = proof_stream.pull()
+        verifier_accepts = verifier_accepts and Merkle.verify1(randomizer_root, i, path, randomizer[i])
+
+    # verify leafs of combination polynomial
+    for i in range(len(indices)):
+        current_index = indices[i]  # do need i
+
+        # get trace values by applying a correction to the boundary quotient values (which are the leafs)
+        domain_current_index = self.generator * (self.omega ^ current_index)
+        next_index = (current_index + self.expansion_factor) % self.fri.domain_length
+        domain_next_index = self.generator * (self.omega ^ next_index)
+        current_trace = [self.field.zero() for s in range(self.num_registers)]
+        next_trace = [self.field.zero() for s in range(self.num_registers)]
+        for s in range(self.num_registers):
+            zerofier = self.boundary_zerofiers(boundary)[s]
+            interpolant = self.boundary_interpolants(boundary)[s]
+
+            current_trace[s] = leafs[s][current_index] * zerofier.evaluate(domain_current_index) + interpolant.evaluate(
+                domain_current_index)
+            next_trace[s] = leafs[s][next_index] * zerofier.evaluate(domain_next_index) + interpolant.evaluate(
+                domain_next_index)
+
+        point = [domain_current_index] + current_trace + next_trace
+        transition_constraints_values = [transition_constraints[s].evaluate(point) for s in
+                                         range(len(transition_constraints))]
+
+        # compute nonlinear combination
+        counter = 0
+        terms = []
+        terms += [randomizer[current_index]]
+        for s in range(len(transition_constraints_values)):
+            tcv = transition_constraints_values[s]
+            quotient = tcv / self.transition_zerofier().evaluate(domain_current_index)
+            terms += [quotient]
+            shift = self.max_degree(transition_constraints) -
+                    self.transition_quotient_degree_bounds(transition_constraints)[s]
+            terms += [quotient * (domain_current_index ^ shift)]
+        for s in range(self.num_registers):
+            bqv = leafs[s][current_index]  # boundary quotient value
+            terms += [bqv]
+            shift = self.max_degree(transition_constraints) -
+                    self.boundary_quotient_degree_bounds(randomized_trace_length, boundary)[s]
+            terms += [bqv * (domain_current_index ^ shift)]
+        combination = reduce(lambda a, b: a + b, [terms[j] * weights[j] for j in range(len(terms))], self.field.zero())
+
+        # verify against combination polynomial value
+        verifier_accepts = verifier_accepts and (combination == values[i])
+        if not verifier_accepts:
+            return False
+
+    return verifier_accepts
 ```
 
 [0](index) - [1](overview) - [2](basic-tools) - [3](fri) - **4** - [5](rescue-prime) - [6](faster)

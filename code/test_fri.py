@@ -36,7 +36,7 @@ def test_fri( ):
     fri.prove(codeword, proof_stream)
     print("")
     points = []
-    verdict = fri.verify(proof_stream, points)
+    verdict = fri.verify1(proof_stream, points)
     if verdict == False:
         print("rejecting proof, but proof should be valid!")
         return
@@ -55,6 +55,6 @@ def test_fri( ):
 
     fri.prove(codeword, proof_stream)
     points = []
-    assert False == fri.verify(proof_stream, points), "proof should fail, but is accepted ..."
+    assert False == fri.verify1(proof_stream, points), "proof should fail, but is accepted ..."
     print("success! \\o/")
 

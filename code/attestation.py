@@ -87,21 +87,19 @@ class Attestation:
         # proof.write(nonce)
         # return proof
         #Start the prove by adding the nonce from the verifier to the trace
-        if path is None:
-            path = gen_exe_paths(self.cfg, start_node, end_node)
-            if path == []:
+        if path is None: path = gen_exe_paths(self.cfg, start_node, end_node) if path == []:
                 return None
             path = path[0]
 
         trace = self.create_trace(path, nonce)
-        root_pow = next_power_of_2(len(trace))
+        root_pow1 = next_power_of_2(len(trace))
         field = Field.main()
 
         g = field.generator()
-        h = field.primitive_nth_root(root_pow*exp_factor)
+        h = field.primitive_nth_root(root_pow1*exp_factor)
 
         G = [g^i for i in range(len(trace))]
-        H = [h^i for i in range(root_pow*exp_factor)]
+        H = [h^i for i in range(root_pow1*exp_factor)]
 
         fx = Polynomial.interpolate_domain(G, trace)
 
@@ -201,7 +199,11 @@ class Attestation:
         cp = p0 + p1 + p2
         cp_eval = cp.evaluate_domain(H_w)
         mk_cp_root = Merkle.commit(cp_eval)
-        fri = Fri(w, h, len(cp_eval), exp_factor, 1)
-        fri.commit(cp_eval, proof)
+
+
+        fri = Fri(w, h, root_pow1, exp_factor, 4)
+        fri_proof = ProofStream()
+        a = fri.prove(cp_eval, fri_proof)
+        b = fri.verify(fri_proof, a)
 
         return trace, proof

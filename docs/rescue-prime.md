@@ -330,32 +330,33 @@ Producing a prover and verifier for STARK for Rescue-Prime consists of little mo
 ```python
 
 class RPSSS:
-    def __init__( self ):
+    def __init__(self):
         self.field = Field.main()
         expansion_factor = 4
         num_colinearity_checks = 64
         security_level = 2 * num_colinearity_checks
 
         self.rp = RescuePrime()
-        num_cycles = self.rp.N+1
+        num_cycles = self.rp.N + 1
         state_width = self.rp.m
 
-        self.stark = Stark(self.field, expansion_factor, num_colinearity_checks, security_level, state_width, num_cycles, transition_constraints_degree=3)
+        self.stark = Stark(self.field, expansion_factor, num_colinearity_checks, security_level, state_width,
+                           num_cycles, transition_constraints_degree=3)
 
-    def stark_prove( self, input_element, proof_stream ):
+    def stark_prove(self, input_element, proof_stream):
         output_element = self.rp.hash(input_element)
 
         trace = self.rp.trace(input_element)
         transition_constraints = self.rp.transition_constraints(self.stark.omicron)
         boundary_constraints = self.rp.boundary_constraints(output_element)
         proof = self.stark.prove(trace, transition_constraints, boundary_constraints, proof_stream)
- 
+
         return proof
 
-    def stark_verify( self, output_element, stark_proof, proof_stream ):
+    def stark_verify(self, output_element, stark_proof, proof_stream):
         boundary_constraints = self.rp.boundary_constraints(output_element)
         transition_constraints = self.rp.transition_constraints(self.stark.omicron)
-        return self.stark.verify(stark_proof, transition_constraints, boundary_constraints, proof_stream)
+        return self.stark.verify1(stark_proof, transition_constraints, boundary_constraints, proof_stream)
 ```
 
 Note the explicit argument concerning the proof stream. This needs to be a special object that simulates a *message-dependent* Fiat-Shamir transform, as opposed to a regular one.

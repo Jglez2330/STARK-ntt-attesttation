@@ -202,7 +202,7 @@ class FastStark:
 
         # verify low degree of combination polynomial
         polynomial_values = []
-        verifier_accepts = self.fri.verify(proof_stream, polynomial_values)
+        verifier_accepts = self.fri.verify1(proof_stream, polynomial_values)
         polynomial_values.sort(key=lambda iv : iv[0])
         if not verifier_accepts:
             return False

@@ -270,104 +270,105 @@ The verifier follows a complementary checklist to the prover's, executing steps 
  - Runs the colinearity checks for every pair of consecutive codewords.
 
  ```python
-    def verify( self, proof_stream, polynomial_values ):
-        omega = self.omega
-        offset = self.offset
+    def verify(self, proof_stream, polynomial_values):
+    omega = self.omega
+    offset = self.offset
 
-        # extract all roots and alphas
-        roots = []
-        alphas = []
-        for r in range(self.num_rounds()):
-            roots += [proof_stream.pull()]
-            alphas += [self.field.sample(proof_stream.verifier_fiat_shamir())]
+    # extract all roots and alphas
+    roots = []
+    alphas = []
+    for r in range(self.num_rounds()):
+        roots += [proof_stream.pull()]
+        alphas += [self.field.sample(proof_stream.verifier_fiat_shamir())]
 
-        # extract last codeword
-        last_codeword = proof_stream.pull()
+    # extract last codeword
+    last_codeword = proof_stream.pull()
 
-        # check if it matches the given root
-        if roots[-1] != Merkle.commit(last_codeword):
-            print("last codeword is not well formed")
-            return False
+    # check if it matches the given root
+    if roots[-1] != Merkle.commit(last_codeword):
+        print("last codeword is not well formed")
+        return False
 
-        # check if it is low degree
-        degree = (len(last_codeword) // self.expansion_factor) - 1
-        last_omega = omega
-        last_offset = offset
-        for r in range(self.num_rounds()-1):
-            last_omega = last_omega^2
-            last_offset = last_offset^2
+    # check if it is low degree
+    degree = (len(last_codeword) // self.expansion_factor) - 1
+    last_omega = omega
+    last_offset = offset
+    for r in range(self.num_rounds() - 1):
+        last_omega = last_omega ^ 2
+        last_offset = last_offset ^ 2
 
-        # assert that last_omega has the right order
-        assert(last_omega.inverse() == last_omega^(len(last_codeword)-1)), "omega does not have right order"
+    # assert that last_omega has the right order
+    assert (last_omega.inverse() == last_omega ^ (len(last_codeword) - 1)), "omega does not have right order"
 
-        # compute interpolant
-        last_domain = [last_offset * (last_omega^i) for i in range(len(last_codeword))]
-        poly = Polynomial.interpolate_domain(last_domain, last_codeword)
+    # compute interpolant
+    last_domain = [last_offset * (last_omega ^ i) for i in range(len(last_codeword))]
+    poly = Polynomial.interpolate_domain(last_domain, last_codeword)
 
-        assert(poly.evaluate_domain(last_domain) == last_codeword), "re-evaluated codeword does not match original!"
-        
-        if poly.degree() > degree:
-            print("last codeword does not correspond to polynomial of low enough degree")
-            print("observed degree:", poly.degree())
-            print("but should be:", degree)
-            return False
+    assert (poly.evaluate_domain(last_domain) == last_codeword), "re-evaluated codeword does not match original!"
 
-        # get indices
-        top_level_indices = self.sample_indices(proof_stream.verifier_fiat_shamir(), self.domain_length >> 1, self.domain_length >> (self.num_rounds()-1), self.num_colinearity_tests)
+    if poly.degree() > degree:
+        print("last codeword does not correspond to polynomial of low enough degree")
+        print("observed degree:", poly.degree())
+        print("but should be:", degree)
+        return False
 
-        # for every round, check consistency of subsequent layers
-        for r in range(0, self.num_rounds()-1):
+    # get indices
+    top_level_indices = self.sample_indices(proof_stream.verifier_fiat_shamir(), self.domain_length >> 1,
+                                            self.domain_length >> (self.num_rounds() - 1), self.num_colinearity_tests)
 
-            # fold c indices
-            c_indices = [index % (self.domain_length >> (r+1)) for index in top_level_indices]
+    # for every round, check consistency of subsequent layers
+    for r in range(0, self.num_rounds() - 1):
 
-            # infer a and b indices
-            a_indices = [index for index in c_indices]
-            b_indices = [index + (self.domain_length >> (r+1)) for index in a_indices]
+        # fold c indices
+        c_indices = [index % (self.domain_length >> (r + 1)) for index in top_level_indices]
 
-            # read values and check colinearity
-            aa = []
-            bb = []
-            cc = []
-            for s in range(self.num_colinearity_tests):
-                (ay, by, cy) = proof_stream.pull()
-                aa += [ay]
-                bb += [by]
-                cc += [cy]
+        # infer a and b indices
+        a_indices = [index for index in c_indices]
+        b_indices = [index + (self.domain_length >> (r + 1)) for index in a_indices]
 
-                # record top-layer values for later verification
-                if r == 0:
-                    polynomial_values += [(a_indices[s], ay), (b_indices[s], by)]
-                
-                # colinearity check
-                ax = offset * (omega^a_indices[s])
-                bx = offset * (omega^b_indices[s])
-                cx = alphas[r]
-                if test_colinearity([(ax, ay), (bx, by), (cx, cy)]) == False:
-                    print("colinearity check failure")
-                    return False
+        # read values and check colinearity
+        aa = []
+        bb = []
+        cc = []
+        for s in range(self.num_colinearity_tests):
+            (ay, by, cy) = proof_stream.pull()
+            aa += [ay]
+            bb += [by]
+            cc += [cy]
 
-            # verify authentication paths
-            for i in range(self.num_colinearity_tests):
-                path = proof_stream.pull()
-                if Merkle.verify(roots[r], a_indices[i], path, aa[i]) == False:
-                    print("merkle authentication path verification fails for aa")
-                    return False
-                path = proof_stream.pull()
-                if Merkle.verify(roots[r], b_indices[i], path, bb[i]) == False:
-                    print("merkle authentication path verification fails for bb")
-                    return False
-                path = proof_stream.pull()
-                if Merkle.verify(roots[r+1], c_indices[i], path, cc[i]) == False:
-                    print("merkle authentication path verification fails for cc")
-                    return False
+            # record top-layer values for later verification
+            if r == 0:
+                polynomial_values += [(a_indices[s], ay), (b_indices[s], by)]
 
-            # square omega and offset to prepare for next round
-            omega = omega^2
-            offset = offset^2
+            # colinearity check
+            ax = offset * (omega ^ a_indices[s])
+            bx = offset * (omega ^ b_indices[s])
+            cx = alphas[r]
+            if test_colinearity([(ax, ay), (bx, by), (cx, cy)]) == False:
+                print("colinearity check failure")
+                return False
 
-        # all checks passed
-        return True
+        # verify authentication paths
+        for i in range(self.num_colinearity_tests):
+            path = proof_stream.pull()
+            if Merkle.verify1(roots[r], a_indices[i], path, aa[i]) == False:
+                print("merkle authentication path verification fails for aa")
+                return False
+            path = proof_stream.pull()
+            if Merkle.verify1(roots[r], b_indices[i], path, bb[i]) == False:
+                print("merkle authentication path verification fails for bb")
+                return False
+            path = proof_stream.pull()
+            if Merkle.verify1(roots[r + 1], c_indices[i], path, cc[i]) == False:
+                print("merkle authentication path verification fails for cc")
+                return False
+
+        # square omega and offset to prepare for next round
+        omega = omega ^ 2
+        offset = offset ^ 2
+
+    # all checks passed
+    return True
 ```
 
 ## Simulating a Polynomial Commitment Scheme

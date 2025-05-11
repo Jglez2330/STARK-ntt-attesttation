@@ -386,14 +386,14 @@ The verifier, in turn, needs to read these values and their authentication paths
 #     [...]
 #     def verify( [..] ):
 #       [...]
-        # read and verify transition zerofier leafs
-        transition_zerofier = dict()
-        for i in duplicated_indices:
-            transition_zerofier[i] = proof_stream.pull()
-            path = proof_stream.pull()
-            verifier_accepts = verifier_accepts and Merkle.verify(transition_zerofier_root, i, path, transition_zerofier[i])
-            if not verifier_accepts:
-                return False
+# read and verify transition zerofier leafs
+transition_zerofier = dict()
+for i in duplicated_indices:
+    transition_zerofier[i] = proof_stream.pull()
+    path = proof_stream.pull()
+    verifier_accepts = verifier_accepts and Merkle.verify1(transition_zerofier_root, i, path, transition_zerofier[i])
+    if not verifier_accepts:
+        return False
 ```
 
 Finally, when the nonlinear combination is computed, these values can be read from memory and used.
