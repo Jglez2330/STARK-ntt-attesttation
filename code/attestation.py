@@ -160,7 +160,7 @@ class Attestation:
             rhs = MPolynomial.constant(self.field.zero())
             for k in range(self.registers):
                 if k == 0:
-                    rhs +=next_state[0] - MPolynomial.constant(FieldElement(100, Field.main()))
+                    rhs +=next_state[0] -  MPolynomial.constant(FieldElement(100, Field.main()))
                 else:
                     rhs += MPolynomial.constant(Field.main().zero())
 
