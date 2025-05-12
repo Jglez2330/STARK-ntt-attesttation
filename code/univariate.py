@@ -76,7 +76,7 @@ class Polynomial:
 
     def leading_coefficient( self ):
         return self.coefficients[self.degree()]
-    @staticmethod
+
     def divide( numerator, denominator ):
         if denominator.degree() == -1:
             return None
@@ -103,8 +103,8 @@ class Polynomial:
             if not c.is_zero():
                 return False
         return True
-    @staticmethod
-    def interpolate_domain(domain, values ):
+
+    def interpolate_domain( domain, values ):
         assert(len(domain) == len(values)), "number of elements in domain does not match number of values -- cannot interpolate"
         assert(len(domain) > 0), "cannot interpolate between zero points"
         field = domain[0].field
@@ -119,7 +119,7 @@ class Polynomial:
             acc = acc + prod
         return acc
 
-    def zerofier_domain(self,  domain ):
+    def zerofier_domain( domain ):
         field = domain[0].field
         x = Polynomial([field.zero(), field.one()])
         acc = Polynomial([field.one()])
@@ -158,4 +158,3 @@ def test_colinearity( points ):
     values = [p[1] for p in points]
     polynomial = Polynomial.interpolate_domain(domain, values)
     return polynomial.degree() == 1
-

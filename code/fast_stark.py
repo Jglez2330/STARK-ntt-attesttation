@@ -21,7 +21,7 @@ class FastStark:
 
         self.num_registers = num_registers
         self.original_trace_length = num_cycles
-        
+
         self.randomized_trace_length = self.original_trace_length + self.num_randomizers
         self.omicron_domain_length = 1 << len(bin(self.randomized_trace_length * transition_constraints_degree)[2:])
         self.fri_domain_length = self.omicron_domain_length * expansion_factor
@@ -77,7 +77,7 @@ class FastStark:
         # create proof stream object if necessary
         if proof_stream == None:
             proof_stream = ProofStream()
-        
+
         # concatenate randomizers
         for k in range(self.num_randomizers):
             trace = trace + [[self.field.sample(os.urandom(17)) for s in range(self.num_registers)]]
@@ -202,7 +202,7 @@ class FastStark:
 
         # verify low degree of combination polynomial
         polynomial_values = []
-        verifier_accepts = self.fri.verify1(proof_stream, polynomial_values)
+        verifier_accepts = self.fri.verify(proof_stream, polynomial_values)
         polynomial_values.sort(key=lambda iv : iv[0])
         if not verifier_accepts:
             return False
@@ -284,4 +284,3 @@ class FastStark:
                 return False
 
         return verifier_accepts
-

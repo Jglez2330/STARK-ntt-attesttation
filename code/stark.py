@@ -20,7 +20,7 @@ class Stark:
 
         self.num_registers = num_registers
         self.original_trace_length = num_cycles
-        
+
         randomized_trace_length = self.original_trace_length + self.num_randomizers
         omicron_domain_length = 1 << len(bin(randomized_trace_length * transition_constraints_degree)[2:])
         fri_domain_length = omicron_domain_length * expansion_factor
@@ -74,7 +74,7 @@ class Stark:
         # create proof stream object if necessary
         if proof_stream == None:
             proof_stream = ProofStream()
-        
+
         # concatenate randomizers
         for k in range(self.num_randomizers):
             trace = trace + [[self.field.sample(os.urandom(17)) for s in range(self.num_registers)]]
@@ -112,7 +112,7 @@ class Stark:
 
         # commit to randomizer polynomial
         randomizer_polynomial = Polynomial([self.field.sample(os.urandom(17)) for i in range(self.max_degree(transition_constraints)+1)])
-        randomizer_codeword = randomizer_polynomial.evaluate_domain(fri_domain) 
+        randomizer_codeword = randomizer_polynomial.evaluate_domain(fri_domain)
         randomizer_root = Merkle.commit(randomizer_codeword)
         proof_stream.push(randomizer_root)
 
@@ -194,7 +194,7 @@ class Stark:
 
         # verify low degree of combination polynomial
         polynomial_values = []
-        verifier_accepts = self.fri.verify1(proof_stream, polynomial_values)
+        verifier_accepts = self.fri.verify(proof_stream, polynomial_values)
         polynomial_values.sort(key=lambda iv : iv[0])
         if not verifier_accepts:
             return False
@@ -267,4 +267,3 @@ class Stark:
                 return False
 
         return verifier_accepts
-

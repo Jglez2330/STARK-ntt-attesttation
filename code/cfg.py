@@ -4,20 +4,7 @@ from hashlib import blake2b
 from algebra import FieldElement, Field
 
 
-#This function gets a cfg and get all the transition on a hash
-#i,e H(a,b) a->b
-def get_list_hash_transitions(cfg):
-    transitions = set()
-    for src in cfg:
-        dests = cfg[src]
-        for dest in dests:
-            transitions.add((src, dest))
-    hash_transitions = []
-    for transition in transitions:
-        transition_bytes = str(transition).encode("UTF-8")
-        hash_transitions.append(blake2b(transition_bytes).hexdigest())
-    hash_transitions = [FieldElement(int.from_bytes(bytes(hash_transition, "UTF-8")), Field.main()) for hash_transition in hash_transitions]
-    return hash_transitions
+
 
 #This functions gets the adjlist hashed
 def get_adjlist_hash(cfg):
