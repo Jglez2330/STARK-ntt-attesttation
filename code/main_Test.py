@@ -19,7 +19,7 @@ if __name__ == '__main__':
     state = a.prove( one_h, None, None)
     boundary = a.boundary_constrains(one_h,Field.main().zero(),nine_5)
 
-    stark = FastStark(Field.main(), 16, 4, 4, 10, a.cycle_num)
+    stark = FastStark(Field.main(), 16, 4, 4, a.registers, a.cycle_num)
     air  = a.transition_constraints(stark.omicron)
     transition_zerofier, transition_zerofier_codeword, transition_zerofier_root = stark.preprocess()
 

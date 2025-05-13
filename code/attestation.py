@@ -1,9 +1,6 @@
 import math
 import random
 
-from sympy.testing.runtests import split_list
-
-from poseidon_pol import*
 from ip import *
 from fri import *
 
@@ -13,7 +10,6 @@ from multivariate import *
 from cfg import *
 from hashlib import blake2b
 from merkle import *
-from poseidon_pol import *
 from rescue_prime import *
 
 class Attestation:
@@ -124,25 +120,49 @@ class Attestation:
         else:
             execution = path
         state = []
-        self.registers = 10
+        self.registers = 11
         #Remove nonce
         transitions = execution["path"]
+        stack = []
         for i in range(len(transitions)-1):
             nonce = nonce
             curr_node = FieldElement(int(transitions[i]["dest"]), Field.main())
             next_node = FieldElement(int(transitions[i+1]["dest"]), Field.main())
             hash_transition = self.hash_trans([curr_node, next_node])
-            call_stack_v = Field.main().zero()
-            return_stack_v = Field.main().zero()
+
+
             valid = FieldElement(1, Field.main())#self.is_valid(hash_transition)
             end = Field.main().zero()
+            call = Field.main().zero()
+            ret = Field.main().zero()
             hash_src = self.rp.hash(curr_node)
             hash_dest = self.rp.hash(next_node)
+            if len(stack) == 0:
+                call_stack_v = Field.main().zero()
+            else:
+                call_stack_v = stack[0]
+
+            if transitions[i]["type"] == "call":
+                stack = [ FieldElement(int(transitions[i]["return"]), Field.main())] + stack
+                call_stack_v = stack[0]
+                call = Field.main().one()
+            elif transitions[i]["type"] == "ret":
+                if len(stack) == 0:
+                    ret = Field.main().one()
+                elif stack[0] == curr_node:
+                    stack = stack[1:]
+                    if len(stack) == 0:
+                        call_stack_v = Field.main().zero()
+                    else:
+                        call_stack_v = stack[0]
+                    ret = Field.main().one()
 
 
-            state += [[nonce, curr_node, next_node, hash_transition, call_stack_v, return_stack_v, valid, end, hash_src, hash_dest]]
 
-        state += [[nonce, FieldElement(int(transitions[-1]["dest"]), Field.main()),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().one(), Field.main().zero(), Field.main().zero()]]
+
+            state += [[nonce, curr_node, next_node, hash_transition, call_stack_v, valid, end, hash_src, hash_dest, call, ret]]
+
+        state += [[nonce, FieldElement(int(transitions[-1]["dest"]), Field.main()),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().one(), Field.main().zero(), Field.main().zero(), Field.main().zero()]]
         self.cycle_num = len(state)
         return  state
 
@@ -183,6 +203,7 @@ class Attestation:
         previous_state = variables[1:(1+self.registers)]
         next_state = variables[(1+self.registers):(1+2*self.registers)]
         air = []
+        field = self.field
         for i in range(self.registers):
             #Default values
             lhs = MPolynomial.constant(self.field.zero())
@@ -197,15 +218,17 @@ class Attestation:
             #Check correct digest
             elif i == 3:
                 lhs = previous_state[3]
-                rhs = previous_state[8] + previous_state[9]
+                rhs = previous_state[7] + previous_state[8]
+                air += [lhs-rhs]
+            #Check stack
+            elif i == 4:
+                lhs = previous_state[4] * next_state[10]
+                rhs = previous_state[2] * next_state[10]
                 air += [lhs-rhs]
             #Check valid transition
-            elif i == 6:
-                lhs = (MPolynomial.constant(field.one())  - previous_state[6])
+            elif i == 5:
+                lhs = (MPolynomial.constant(field.one())  - previous_state[5])
                 rhs = MPolynomial.constant(field.zero())
-
-
-
                 air += [rhs-lhs]
 
 
@@ -237,6 +260,8 @@ class Attestation:
         constraints += [(self.cycle_num-1, 7, Field.main().one())]
         constraints += [(self.cycle_num-1, 8, Field.main().zero())]
         constraints += [(self.cycle_num-1, 9, Field.main().zero())]
+        #Final values should be zeros
+        constraints += [(self.cycle_num-1, 10, zero)]
 
 
         return  constraints
