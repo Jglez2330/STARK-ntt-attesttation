@@ -159,6 +159,22 @@ class RescuePrime:
         # squeeze
         return state[0]
 
+    def forward_poly(self, poly):
+        state = [poly] + [MPolynomial.constant(self.field.zero())] * (self.m - 1)
+        for r in range(self.N):
+            # forward half-round
+            # S-box
+            for i in range(self.m):
+                state[i] = state[i]^self.alpha
+            # matrix
+            temp = [MPolynomial.constant(self.field.zero()) for i in range(self.m)]
+            for i in range(self.m):
+                for j in range(self.m):
+                    temp[i] = temp[i] + MPolynomial.constant(self.MDS[i][j]) * state[j]
+            # constants
+            state = [temp[i] + MPolynomial.constant(self.round_constants[2*r*self.m+i]) for i in range(self.m)]
+        return state
+
     def trace( self, input_element ):
         trace = []
 

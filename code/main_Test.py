@@ -13,14 +13,14 @@ if __name__ == '__main__':
            7:[9],
            8:[9]}
     a = Attestation(cfg)
-    nine = FieldElement(9, Field.main())
+    nine_5 = FieldElement(95, Field.main())
     one_h = FieldElement(100, Field.main())
     trace = [FieldElement(i, Field.main()) for i in [100, 1, 2, 6, 7, 9] ]
-    state = a.prove(Field.main().one(), nine, one_h, None, trace)
-    air  = a.transition_constraints()
-    boundary = a.boundary_constrains(one_h,Field.main().one(),nine)
+    state = a.prove( one_h, None, None)
+    boundary = a.boundary_constrains(one_h,Field.main().zero(),nine_5)
 
-    stark = FastStark(Field.main(), 8, 2, 2, 8, a.cycle_num)
+    stark = FastStark(Field.main(), 16, 4, 4, 10, a.cycle_num)
+    air  = a.transition_constraints(stark.omicron)
     transition_zerofier, transition_zerofier_codeword, transition_zerofier_root = stark.preprocess()
 
     proof = stark.prove(state, air, boundary, transition_zerofier, transition_zerofier_codeword)

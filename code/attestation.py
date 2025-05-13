@@ -1,8 +1,9 @@
 import math
 import random
 
-import poseidon
+from sympy.testing.runtests import split_list
 
+from poseidon_pol import*
 from ip import *
 from fri import *
 
@@ -12,38 +13,18 @@ from multivariate import *
 from cfg import *
 from hashlib import blake2b
 from merkle import *
-from poseidon import *
-
-poseidon_hash_f, t = poseidon.case_simple()
-
-def hash_leaves(leaves):
-    leaves_hashes = []
-    for leaf in leaves:
-        leaves_hashes.append(blake2b(leaf).digest())
-    return leaves_hashes
-def next_power_of_2(n):
-    if n < 1:
-        return 1
-    return 2 ** math.ceil(math.log2(n))
-def blockify(lst, block_size, padding_value=None):
-    if block_size <= 0:
-        raise ValueError("Block size must be a positive integer.")
-
-    blocks = [lst[i:i + block_size] for i in range(0, len(lst), block_size)]
-
-    # Pad the last block if it's smaller than block_size
-    if blocks and len(blocks[-1]) < block_size:
-        blocks[-1].extend([padding_value] * (block_size - len(blocks[-1])))
-
-    return blocks
+from poseidon_pol import *
+from rescue_prime import *
 
 class Attestation:
     def __init__(self, cfg):
         self.cfg = cfg
         self.cycle_num = 0
         self.registers = 0
+        self.rp = RescuePrime()
         self.hash_transitions = self.get_list_hash_transitions()
         self.field = Field.main()
+
     #This function gets a cfg and get all the transition on a hash
     #i,e H(a,b) a->b
     def get_list_hash_transitions(self):
@@ -56,7 +37,7 @@ class Attestation:
         for transition in transitions:
             src = FieldElement(transition[0], Field.main())
             dest = FieldElement(transition[1], Field.main())
-            hash_transitions.append(self.hash_poseidon([src, dest]))
+            hash_transitions.append(self.hash_trans([src, dest]))
         return hash_transitions
     def create_trace(self, path, nonce = 0, padding_value = 0, falsify_path_list=[]):
         trace = [FieldElement(nonce, Field.main())] + [FieldElement(node, Field.main()) for node in path]
@@ -68,12 +49,10 @@ class Attestation:
 
         return hash_trace
     def load_trace_from_file(self, path):
-        call_stack = []
-        return_stack = []
+        execution_path = {}
         with open(path, 'r') as file:
             lines = file.readlines()
             # Create a list to store the content
-            content = []
             # Iterate through each line
             start = True
             for line in lines:
@@ -81,20 +60,38 @@ class Attestation:
                 parts = line.strip().split(' ')
                 if start:
                     start = False
-                    content.append(line)
+                    split_list= parts[0].strip().split('=')
+                    execution_path["start"] = split_list[1]
+                    split_list= parts[1].strip().split('=')
+                    execution_path["end"] = split_list[1]
+                    start_node = {}
+                    start_node["type"] = "start"
+                    start_node["dest"] = execution_path["start"]
+                    start_node["return"] = execution_path["start"]
+                    execution_path["path"] = [start_node]
                     continue
                 # select the second element
                 if "call" in parts:
-                    second_element = parts[1]
-                    call_stack.append(parts[2])
+                    jmp = {}
+                    jmp["type"] = "call"
+                    jmp["dest"] = parts[1]
+                    jmp["return"] = parts[2]
+                    execution_path["path"].append(jmp)
                 elif "ret" in parts:
-                    second_element = parts[1]
-                    return_stack.append(parts[1])
+                    jmp = {}
+                    jmp["type"] = "ret"
+                    jmp["dest"] = parts[1]
+                    jmp["return"] = parts[1]
+                    execution_path["path"].append(jmp)
+
                 else:
-                    second_element = parts[1]
+                    jmp = {}
+                    jmp["type"] = "jmp"
+                    jmp["dest"] = parts[1]
+                    jmp["return"] = parts[1]
+                    execution_path["path"].append(jmp)
                 # Append the second element to the content list
-                content.append(second_element)
-        return content, call_stack, return_stack
+        return execution_path
 
     def execute(self, nonce, start, end, trace=None, call_stack=None, return_stack=None):
         if trace is None:
@@ -102,13 +99,17 @@ class Attestation:
             trace = execution[1:]
 
         return nonce + trace
-    def hash_poseidon(self, list:list[FieldElement]):
-        vec = [elment.value for elment in list]
+    def hash_trans(self, list:list[FieldElement]):
+
+        hash_src = self.rp.hash(list[0])
+        hash_dest = self.rp.hash(list[1])
+        hash = hash_src + hash_dest
 
 
-        result = poseidon_hash_f.run_hash(vec)
 
-        return FieldElement(int(result), Field.main())
+
+
+        return hash
 
     def is_valid(self, hash_transition):
         if hash_transition in self.hash_transitions:
@@ -116,34 +117,66 @@ class Attestation:
         else:
             return Field.main().zero()
 
-    def prove(self, start_node, end_node, nonce, proof:ProofStream, path=None):
-        if path is None:
-            execution, call_stack, return_stack = self.load_trace_from_file("/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-attesttation/ZEKRA-STARK/embench-iot-applications/aha-mont64/numified_path")
-            trace = execution[1:]
+    def prove(self, nonce, proof:ProofStream, path=None, call_stack=None, return_stack=None):
+        execution = {}
+        if path is isinstance(path, str) or path is None:
+            execution = self.load_trace_from_file("/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-attesttation/ZEKRA-STARK/embench-iot-applications/aha-mont64/numified_path")
         else:
-            trace = path
-
+            execution = path
         state = []
-        self.registers = 8
+        self.registers = 10
         #Remove nonce
-        transitions = trace[1:]
+        transitions = execution["path"]
         for i in range(len(transitions)-1):
-            nonce = trace[0]
-            curr_node = transitions[i]
-            next_node = transitions[i+1]
-            hash_transition = self.hash_poseidon([curr_node, next_node])
+            nonce = nonce
+            curr_node = FieldElement(int(transitions[i]["dest"]), Field.main())
+            next_node = FieldElement(int(transitions[i+1]["dest"]), Field.main())
+            hash_transition = self.hash_trans([curr_node, next_node])
             call_stack_v = Field.main().zero()
             return_stack_v = Field.main().zero()
-            valid = self.is_valid(hash_transition)
+            valid = FieldElement(1, Field.main())#self.is_valid(hash_transition)
             end = Field.main().zero()
+            hash_src = self.rp.hash(curr_node)
+            hash_dest = self.rp.hash(next_node)
 
-            state += [[nonce, curr_node, next_node, hash_transition, call_stack_v, return_stack_v, valid, end]]
 
-        state += [[nonce, transitions[-1],Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().one()]]
+            state += [[nonce, curr_node, next_node, hash_transition, call_stack_v, return_stack_v, valid, end, hash_src, hash_dest]]
+
+        state += [[nonce, FieldElement(int(transitions[-1]["dest"]), Field.main()),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().one(), Field.main().zero(), Field.main().zero()]]
         self.cycle_num = len(state)
         return  state
 
-    def transition_constraints(self):
+    def polynomial_digest(self):
+        field = Field.main()
+        X = Polynomial([field.zero(), field.one()])
+        acc = Polynomial([field.one()])
+        for hash in self.hash_transitions:
+            acc *= (X-hash)
+        return acc
+    def round_constants_polynomials( self, omicron ):
+        first_step_constants = []
+        for i in range(2):
+            N = 64
+            domain = [omicron^r for r in range(0, N)]
+            values = [self.round_constants[2*r*2+i] for r in range(0, N)]
+            univariate = Polynomial.interpolate_domain(domain, values)
+            multivariate = MPolynomial.lift(univariate, 0)
+            first_step_constants += [multivariate]
+        second_step_constants = []
+        for i in range(self.m):
+            domain = [omicron^r for r in range(0, self.N)]
+            values = [self.field.zero()] * self.N
+            #for r in range(self.N):
+            #    print("len(round_constants):", len(self.round_constants), " but grabbing index:", 2*r*self.m+self.m+i, "for r=", r, "for m=", self.m, "for i=", i)
+            #    values[r] = self.round_constants[2*r*self.m + self.m + i]
+            values = [self.round_constants[2*r*self.m+self.m+i] for r in range(self.N)]
+            univariate = Polynomial.interpolate_domain(domain, values)
+            multivariate = MPolynomial.lift(univariate, 0)
+            second_step_constants += [multivariate]
+
+        return first_step_constants, second_step_constants
+
+    def transition_constraints(self, omicron):
         # arithmetize one round of Rescue-Prime
         variables = MPolynomial.variables(1 + 2*self.registers, self.field)
         cycle_index = variables[0]
@@ -151,20 +184,30 @@ class Attestation:
         next_state = variables[(1+self.registers):(1+2*self.registers)]
         air = []
         for i in range(self.registers):
+            #Default values
             lhs = MPolynomial.constant(self.field.zero())
-            for k in range(self.registers):
-                if k == 0:
-                    lhs += previous_state[7]
-                else:
-                    lhs += MPolynomial.constant(Field.main().zero())
             rhs = MPolynomial.constant(self.field.zero())
-            for k in range(self.registers):
-                if k == 0:
-                    rhs +=next_state[0] -  MPolynomial.constant(FieldElement(100, Field.main()))
-                else:
-                    rhs += MPolynomial.constant(Field.main().zero())
+            if i == 1:
+                lhs = previous_state[2]
+                rhs = next_state[1]
+                air += [lhs-rhs]
+            #The correct execution of the hash is going to be proved on another stark
+            elif i == 8 or i == 9:
+                continue
+            #Check correct digest
+            elif i == 3:
+                lhs = previous_state[3]
+                rhs = previous_state[8] + previous_state[9]
+                air += [lhs-rhs]
+            #Check valid transition
+            elif i == 6:
+                lhs = (MPolynomial.constant(field.one())  - previous_state[6])
+                rhs = MPolynomial.constant(field.zero())
 
-            air += [lhs-rhs]
+
+
+                air += [rhs-lhs]
+
 
         return air
 
@@ -192,6 +235,8 @@ class Attestation:
         constraints += [(self.cycle_num-1, 6, zero)]
         #End is one
         constraints += [(self.cycle_num-1, 7, Field.main().one())]
+        constraints += [(self.cycle_num-1, 8, Field.main().zero())]
+        constraints += [(self.cycle_num-1, 9, Field.main().zero())]
 
 
         return  constraints

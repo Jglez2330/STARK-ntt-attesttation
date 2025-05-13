@@ -6,7 +6,7 @@ from functools import reduce
 import os
 
 class FastStark:
-    def __init__( self, field, expansion_factor, num_colinearity_checks, security_level, num_registers, num_cycles, transition_constraints_degree=2 ):
+    def __init__( self, field, expansion_factor, num_colinearity_checks, security_level, num_registers, num_cycles, transition_constraints_degree=4):
         assert(len(bin(field.p)) - 2 >= security_level), "p must have at least as many bits as security level"
         assert(expansion_factor & (expansion_factor - 1) == 0), "expansion factor must be a power of 2"
         assert(expansion_factor >= 4), "expansion factor must be 4 or greater"
