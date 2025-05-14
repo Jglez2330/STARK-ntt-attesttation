@@ -12,14 +12,33 @@ from hashlib import blake2b
 from merkle import *
 from rescue_prime import *
 
+def load_cfg(path):
+    cfg = {}
+    with open(path, 'r') as file:
+        lines = file.readlines()
+        # Create a list to store the content
+        # Iterate through each line
+        for line in lines:
+            # Remove the newline character and split by comma
+            parts = line.strip().split(' ')
+            # select the first element
+            src = int(parts[0])
+            dests = [int(dest) for dest in parts[1:]]
+            cfg[src] = dests
+        return cfg
+
 class Attestation:
     def __init__(self, cfg):
         self.cfg = cfg
         self.cycle_num = 0
-        self.registers = 0
+        self.registers = 11
         self.rp = RescuePrime()
         self.hash_transitions = self.get_list_hash_transitions()
         self.field = Field.main()
+        #self.valid_check_poly = self.valid_poly()
+        self.start = Field.main().zero()
+        self.end = Field.main().zero()
+        self.nonce = Field.main().zero()
 
     #This function gets a cfg and get all the transition on a hash
     #i,e H(a,b) a->b
@@ -101,11 +120,17 @@ class Attestation:
         hash_dest = self.rp.hash(list[1])
         hash = hash_src + hash_dest
 
-
-
-
-
         return hash
+
+    def valid_poly(self):
+        variables = MPolynomial.variables(1 + 2*self.registers, self.field)
+        var = variables[1:(1+self.registers)]
+        poly = var[3]
+        field = Field.main()
+        acc = MPolynomial.constant(field.one())
+        for hash in self.hash_transitions:
+            acc *= (poly-MPolynomial.constant(hash))
+        return acc
 
     def is_valid(self, hash_transition):
         if hash_transition in self.hash_transitions:
@@ -113,14 +138,18 @@ class Attestation:
         else:
             return Field.main().zero()
 
-    def prove(self, nonce, proof:ProofStream, path=None, call_stack=None, return_stack=None):
+    def prove(self, nonce, false_path, proof:ProofStream, path=None, call_stack=None, return_stack=None):
         execution = {}
-        if path is isinstance(path, str) or path is None:
-            execution = self.load_trace_from_file("/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-attesttation/ZEKRA-STARK/embench-iot-applications/aha-mont64/numified_path")
+        if isinstance(path, str):
+            execution = self.load_trace_from_file(path)
+        elif path is None:
+            return None
         else:
             execution = path
         state = []
         self.registers = 11
+        self.start = FieldElement(int(execution["start"]), Field.main())
+        self.end = FieldElement(int(execution["end"]), Field.main())
         #Remove nonce
         transitions = execution["path"]
         stack = []
@@ -131,7 +160,7 @@ class Attestation:
             hash_transition = self.hash_trans([curr_node, next_node])
 
 
-            valid = FieldElement(1, Field.main())#self.is_valid(hash_transition)
+            valid = self.is_valid(hash_transition)
             end = Field.main().zero()
             call = Field.main().zero()
             ret = Field.main().zero()
@@ -157,10 +186,25 @@ class Attestation:
                         call_stack_v = stack[0]
                     ret = Field.main().one()
 
-
-
-
             state += [[nonce, curr_node, next_node, hash_transition, call_stack_v, valid, end, hash_src, hash_dest, call, ret]]
+        if false_path:
+            random_len = random.randint(0, 10)
+            for i in range(random_len):
+                nonce = Field.main().zero()
+                curr_node = FieldElement(800, Field.main())
+                next_node = FieldElement(800, Field.main())
+                hash_transition = self.hash_trans([curr_node, next_node])
+                valid = self.is_valid(hash_transition)
+                end = Field.main().zero()
+                call = Field.main().zero()
+                ret = Field.main().zero()
+                hash_src = self.rp.hash(curr_node)
+                hash_dest = self.rp.hash(next_node)
+                if len(stack) == 0:
+                    call_stack_v = Field.main().zero()
+                else:
+                    call_stack_v = stack[0]
+                state += [[nonce, curr_node, next_node, hash_transition, call_stack_v, valid, end, hash_src, hash_dest, call, ret]]
 
         state += [[nonce, FieldElement(int(transitions[-1]["dest"]), Field.main()),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().zero(),Field.main().zero(), Field.main().one(), Field.main().zero(), Field.main().zero(), Field.main().zero()]]
         self.cycle_num = len(state)
@@ -213,6 +257,7 @@ class Attestation:
                 rhs = next_state[1]
                 air += [lhs-rhs]
             #The correct execution of the hash is going to be proved on another stark
+            # For the PoC is not needed, we asume the hash are always correct
             elif i == 8 or i == 9:
                 continue
             #Check correct digest
@@ -227,10 +272,10 @@ class Attestation:
                 air += [lhs-rhs]
             #Check valid transition
             elif i == 5:
+                #Check if the hash is one
                 lhs = (MPolynomial.constant(field.one())  - previous_state[5])
                 rhs = MPolynomial.constant(field.zero())
                 air += [rhs-lhs]
-
 
         return air
 
