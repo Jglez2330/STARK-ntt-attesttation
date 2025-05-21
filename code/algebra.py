@@ -12,7 +12,7 @@ def xgcd( x, y ):
     return old_s, old_t, old_r # a, b, g
 
 class FieldElement:
-    def __init__( self, value, field ):
+    def __init__( self, value, field):
         self.value = value
         self.field = field
 

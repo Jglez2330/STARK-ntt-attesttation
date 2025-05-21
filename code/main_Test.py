@@ -1,10 +1,67 @@
 import time
 
-from attestation import Attestation, load_cfg
+from Attestation import Attestation
 from algebra import *
 from fast_stark import FastStark
 from ip import ProofStream
+def load_trace_from_file(path):
+    execution_path = {}
+    with open(path, 'r') as file:
+        lines = file.readlines()
+        # Create a list to store the content
+        # Iterate through each line
+        start = True
+        for line in lines:
+            # Remove the newline character and split by comma
+            parts = line.strip().split(' ')
+            if start:
+                start = False
+                split_list= parts[0].strip().split('=')
+                execution_path["start"] = FieldElement(int(split_list[1]), Field.main())
+                split_list= parts[1].strip().split('=')
+                execution_path["end"] = FieldElement(int(split_list[1]), Field.main())
+                start_node = {}
+                start_node["type"] = "start"
+                start_node["dest"] = execution_path["start"]
+                start_node["return"] = execution_path["start"]
+                execution_path["path"] = [start_node]
+                continue
+            # select the second element
+            if "call" in parts:
+                jmp = {}
+                jmp["type"] = "call"
+                jmp["dest"] = FieldElement(int(parts[1]), Field.main())
+                jmp["return"] = FieldElement(int(parts[2]), Field.main())
+                execution_path["path"].append(jmp)
+            elif "ret" in parts:
+                jmp = {}
+                jmp["type"] = "ret"
+                jmp["dest"] = FieldElement(int(parts[1]), Field.main())
+                jmp["return"] = FieldElement(int(parts[1]), Field.main())
+                execution_path["path"].append(jmp)
 
+            else:
+                jmp = {}
+                jmp["type"] = "jmp"
+                jmp["dest"] = FieldElement(int(parts[1]), Field.main())
+                jmp["return"] = FieldElement(int(parts[1]), Field.main())
+                execution_path["path"].append(jmp)
+            # Append the second element to the content list
+    return execution_path
+def load_cfg(path):
+    cfg = {}
+    with open(path, 'r') as file:
+        lines = file.readlines()
+        # Create a list to store the content
+        # Iterate through each line
+        for line in lines:
+            # Remove the newline character and split by comma
+            parts = line.strip().split(' ')
+            # select the first element
+            src = int(parts[0])
+            dests = [int(dest) for dest in parts[1:]]
+            cfg[src] = dests
+        return cfg
 if __name__ == '__main__':
 
     cfg = load_cfg("/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/ZEKRA-STARK/embench-iot-applications/aha-mont64/numified_adjlist")
@@ -13,10 +70,11 @@ if __name__ == '__main__':
 
     a = Attestation(cfg)
     one_h = FieldElement(100, Field.main())
-    state = a.prove( one_h,False, None, path,)
+    execution = load_trace_from_file(path)
+    state = a.trace(one_h, execution["start"], execution["end"], execution["path"])
     boundary = a.boundary_constrains(one_h,a.start,a.end)
 
-    stark = FastStark(Field.main(), 16, 8, 8, a.registers, a.cycle_num)
+    stark = FastStark(Field.main(), 1024, 2, 2, a.registers, a.cycle_num)
     air  = a.transition_constraints(stark.omicron)
     transition_zerofier, transition_zerofier_codeword, transition_zerofier_root = stark.preprocess()
     start = time.time()

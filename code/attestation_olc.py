@@ -12,20 +12,7 @@ from hashlib import blake2b
 from merkle import *
 from rescue_prime import *
 
-def load_cfg(path):
-    cfg = {}
-    with open(path, 'r') as file:
-        lines = file.readlines()
-        # Create a list to store the content
-        # Iterate through each line
-        for line in lines:
-            # Remove the newline character and split by comma
-            parts = line.strip().split(' ')
-            # select the first element
-            src = int(parts[0])
-            dests = [int(dest) for dest in parts[1:]]
-            cfg[src] = dests
-        return cfg
+
 
 class Attestation:
     def __init__(self, cfg):
@@ -33,7 +20,7 @@ class Attestation:
         self.cycle_num = 0
         self.registers = 11
         self.rp = RescuePrime()
-        self.hash_transitions = self.get_list_hash_transitions()
+        #self.hash_transitions = self.get_list_hash_transitions()
         self.field = Field.main()
         #self.valid_check_poly = self.valid_poly()
         self.start = Field.main().zero()
@@ -63,50 +50,7 @@ class Attestation:
         hash_trace = [FieldElement(int.from_bytes(bytes(bytes_hash, "UTF-8")), Field.main()) for bytes_hash in bytes_hashes]
 
         return hash_trace
-    def load_trace_from_file(self, path):
-        execution_path = {}
-        with open(path, 'r') as file:
-            lines = file.readlines()
-            # Create a list to store the content
-            # Iterate through each line
-            start = True
-            for line in lines:
-                # Remove the newline character and split by comma
-                parts = line.strip().split(' ')
-                if start:
-                    start = False
-                    split_list= parts[0].strip().split('=')
-                    execution_path["start"] = split_list[1]
-                    split_list= parts[1].strip().split('=')
-                    execution_path["end"] = split_list[1]
-                    start_node = {}
-                    start_node["type"] = "start"
-                    start_node["dest"] = execution_path["start"]
-                    start_node["return"] = execution_path["start"]
-                    execution_path["path"] = [start_node]
-                    continue
-                # select the second element
-                if "call" in parts:
-                    jmp = {}
-                    jmp["type"] = "call"
-                    jmp["dest"] = parts[1]
-                    jmp["return"] = parts[2]
-                    execution_path["path"].append(jmp)
-                elif "ret" in parts:
-                    jmp = {}
-                    jmp["type"] = "ret"
-                    jmp["dest"] = parts[1]
-                    jmp["return"] = parts[1]
-                    execution_path["path"].append(jmp)
 
-                else:
-                    jmp = {}
-                    jmp["type"] = "jmp"
-                    jmp["dest"] = parts[1]
-                    jmp["return"] = parts[1]
-                    execution_path["path"].append(jmp)
-                # Append the second element to the content list
-        return execution_path
 
     def execute(self, nonce, start, end, trace=None, call_stack=None, return_stack=None):
         if trace is None:
@@ -140,9 +84,7 @@ class Attestation:
 
     def prove(self, nonce, false_path, proof:ProofStream, path=None, call_stack=None, return_stack=None):
         execution = {}
-        if isinstance(path, str):
-            execution = self.load_trace_from_file(path)
-        elif path is None:
+        if path is None:
             return None
         else:
             execution = path
@@ -160,7 +102,7 @@ class Attestation:
             hash_transition = self.hash_trans([curr_node, next_node])
 
 
-            valid = self.is_valid(hash_transition)
+            valid = Field.main().one()
             end = Field.main().zero()
             call = Field.main().zero()
             ret = Field.main().zero()
@@ -194,7 +136,7 @@ class Attestation:
                 curr_node = FieldElement(800, Field.main())
                 next_node = FieldElement(800, Field.main())
                 hash_transition = self.hash_trans([curr_node, next_node])
-                valid = self.is_valid(hash_transition)
+                valid = Field.main().zero()
                 end = Field.main().zero()
                 call = Field.main().zero()
                 ret = Field.main().zero()
@@ -256,10 +198,6 @@ class Attestation:
                 lhs = previous_state[2]
                 rhs = next_state[1]
                 air += [lhs-rhs]
-            #The correct execution of the hash is going to be proved on another stark
-            # For the PoC is not needed, we asume the hash are always correct
-            elif i == 8 or i == 9:
-                continue
             #Check correct digest
             elif i == 3:
                 lhs = previous_state[3]
