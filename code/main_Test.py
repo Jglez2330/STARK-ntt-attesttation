@@ -72,9 +72,9 @@ if __name__ == '__main__':
     one_h = FieldElement(100, Field.main())
     execution = load_trace_from_file(path)
     state = a.trace(one_h, execution["start"], execution["end"], execution["path"])
-    boundary = a.boundary_constrains(one_h,a.start,a.end)
+    boundary = a.boundary_constraints(one_h,a.start,a.end)
 
-    stark = FastStark(Field.main(), 1024, 2, 2, a.registers, a.cycle_num)
+    stark = FastStark(Field.main(), 128, 2, 2, a.num_registers, a.num_cycles, transition_constraints_degree=a.max_adjacency+1)
     air  = a.transition_constraints(stark.omicron)
     transition_zerofier, transition_zerofier_codeword, transition_zerofier_root = stark.preprocess()
     start = time.time()
