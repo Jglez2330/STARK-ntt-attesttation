@@ -74,7 +74,7 @@ if __name__ == '__main__':
     state = a.trace(one_h, execution["start"], execution["end"], execution["path"])
     boundary = a.boundary_constraints(one_h,a.start,a.end)
 
-    stark = FastStark(Field.main(), 128, 2, 2, a.num_registers, a.num_cycles, transition_constraints_degree=a.max_adjacency+1)
+    stark = FastStark(Field.main(), 4, 2, 2, a.num_registers, a.num_cycles, transition_constraints_degree=a.max_adjacency+1)
     air  = a.transition_constraints(stark.omicron)
     transition_zerofier, transition_zerofier_codeword, transition_zerofier_root = stark.preprocess()
     start = time.time()

@@ -142,30 +142,25 @@ class Attestation:
         call_stack_index = neighbor_start_index + self.max_adjacency
         air = []
         field = self.field
-        for i in range(self.num_registers):
-            #Default values
-            lhs = MPolynomial.constant(self.field.zero())
-            rhs = MPolynomial.constant(self.field.zero())
-            if i == 1:
-                lhs = previous_state[2]
-                rhs = next_state[1]
-                #Check that is not the initial state
-                initial_pol = MPolynomial.constant(self.field.one()) - previous_state[-1]
-                air += [(lhs-rhs)*(initial_pol)]
-            #Check valid next state
-            if i == 2:
-                current_neighbours = previous_state[neighbor_start_index:neighbor_start_index+self.max_adjacency]
-                next_node = previous_state[2]
-                valid_next_state = self.get_valid_transition_polynomial(next_node, current_neighbours)
-                #Check that is not the initial state
-                initial_pol = MPolynomial.constant(self.field.one()) - previous_state[-1]
-                air += [valid_next_state*(initial_pol)]
+        # Check that the transition was performed correctly
+        lhs = previous_state[2]
+        rhs = next_state[1]
+        #Check that is not the initial state
+        initial_pol = MPolynomial.constant(self.field.one()) - previous_state[-1]
+        air += [(lhs-rhs)*(initial_pol)]
 
-            #Check stack
-            elif i == 4:
-                lhs = previous_state[call_stack_index] * next_state[-2]
-                rhs = previous_state[2] * next_state[-2]
-                air += [lhs-rhs]
+        #Check valid next state transition (forward)
+        current_neighbours = previous_state[neighbor_start_index:neighbor_start_index+self.max_adjacency]
+        next_node = previous_state[2]
+        valid_next_state = self.get_valid_transition_polynomial(next_node, current_neighbours)
+        #Check that is not the initial state
+        initial_pol = MPolynomial.constant(self.field.one()) - previous_state[-1]
+        air += [valid_next_state*(initial_pol)]
+
+        #Check stack consistency (backwards)
+        lhs = previous_state[call_stack_index] * next_state[-2]
+        rhs = previous_state[2] * next_state[-2]
+        air += [lhs-rhs]
 
 
         return air
