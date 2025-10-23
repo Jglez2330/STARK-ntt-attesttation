@@ -64,8 +64,8 @@ def load_cfg(path):
         return cfg
 if __name__ == '__main__':
 
-    cfg = load_cfg("/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/ZEKRA-STARK/embench-iot-applications/aha-mont64/numified_adjlist")
-    path = "/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/ZEKRA-STARK/embench-iot-applications/aha-mont64/numified_path"
+    cfg = load_cfg("/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/code/complete_runs/aha-mont64/numified_adjlist")
+    path = "/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/code/complete_runs/aha-mont64/numified_path"
     #Time the execution
 
     #cfg = {0: [1, 2], 1: [3], 2: [4], 3: [5], 4: [], 5:[]} # Example CFG
