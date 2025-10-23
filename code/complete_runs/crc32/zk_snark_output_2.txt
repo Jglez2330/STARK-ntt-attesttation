@@ -1,0 +1,248 @@
+Reset time counters for profiling
+Using ppzsknark in the generic group model [Gro16].
+(enter) Parsing and Evaluating the circuit 	[             ]	(0.0006s x1.00 from start)
+(leave) Parsing and Evaluating the circuit 	[2.5003s x1.00]	(2.5009s x1.00 from start)
+Translating Constraints ... 
+	Constraint translation done
+	Memory usage for constraint translation: 1711 MB
+Assignment of values done .. 
+(enter) Call to run_r1cs_gg_ppzksnark      	[             ]	(32.3817s x1.00 from start)
+
+================================================================================
+R1CS GG-ppzkSNARK Generator
+================================================================================
+
+  (enter) Call to r1cs_gg_ppzksnark_generator	[             ]	(32.3817s x1.00 from start)
+    (enter) Call to r1cs_constraint_system::swap_AB_if_beneficial	[             ]	(32.5954s x1.00 from start)
+      (enter) Estimate densities                 	[             ]	(32.5954s x1.00 from start)
+        * Non-zero A-count (estimate): 285676
+        * Non-zero B-count (estimate): 289744
+      (leave) Estimate densities                 	[0.0327s x1.00]	(32.6281s x1.00 from start)
+      (enter) Perform the swap                   	[             ]	(32.6282s x1.00 from start)
+      (leave) Perform the swap                   	[0.0022s x1.00]	(32.6304s x1.00 from start)
+    (leave) Call to r1cs_constraint_system::swap_AB_if_beneficial	[0.0350s x1.00]	(32.6304s x1.00 from start)
+    (enter) Call to r1cs_to_qap_instance_map_with_evaluation	[             ]	(32.6305s x1.00 from start)
+      (enter) Compute evaluations of A, B, C, H at t	[             ]	(32.6385s x1.00 from start)
+      (leave) Compute evaluations of A, B, C, H at t	[1.5007s x1.00]	(34.1392s x1.00 from start)
+    (leave) Call to r1cs_to_qap_instance_map_with_evaluation	[1.5088s x1.00]	(34.1392s x1.00 from start)
+    * QAP number of variables: 357213
+    * QAP pre degree: 336230
+    * QAP degree: 393216
+    * QAP number of input variables: 7
+    (enter) Compute query densities            	[             ]	(34.1393s x1.00 from start)
+    (leave) Compute query densities            	[0.0014s x1.00]	(34.1406s x1.00 from start)
+    (enter) Compute gamma_ABC for R1CS verification key	[             ]	(34.1406s x1.00 from start)
+    (leave) Compute gamma_ABC for R1CS verification key	[0.0000s x1.02]	(34.1407s x1.00 from start)
+    (enter) Compute L query for R1CS proving key	[             ]	(34.1407s x1.00 from start)
+    (leave) Compute L query for R1CS proving key	[0.0405s x1.00]	(34.1811s x1.00 from start)
+    (enter) Generating G1 MSM window table     	[             ]	(34.1812s x1.00 from start)
+      Choosing window size 17 for 930359 elements
+      * G1 window: 17
+    (leave) Generating G1 MSM window table     	[0.8242s x1.00]	(35.0054s x1.00 from start)
+    (enter) Generating G2 MSM window table     	[             ]	(35.0054s x1.00 from start)
+      Choosing window size 15 for 283398 elements
+      * G2 window: 15
+    (leave) Generating G2 MSM window table     	[0.5851s x1.00]	(35.5905s x1.00 from start)
+    (enter) Generate R1CS proving key          	[             ]	(35.5906s x1.00 from start)
+      (enter) Generate queries                   	[             ]	(35.5915s x1.00 from start)
+        (enter) Compute the A-query                	[             ]	(35.5915s x1.00 from start)
+        .................................... DONE!
+        (leave) Compute the A-query                	[0.4317s x12.75]	(36.0232s x1.14 from start)
+        (enter) Compute the B-query                	[             ]	(36.0232s x1.14 from start)
+        Non-zero coordinate count: 283398/357214 (79.34%)
+        (leave) Compute the B-query                	[1.3276s x12.97]	(37.3509s x1.56 from start)
+        (enter) Compute the H-query                	[             ]	(37.3509s x1.56 from start)
+        ........................................ DONE!
+        (leave) Compute the H-query                	[0.5659s x12.37]	(37.9168s x1.72 from start)
+        (enter) Compute the L-query                	[             ]	(37.9169s x1.72 from start)
+        .................................... DONE!
+        (leave) Compute the L-query                	[0.5163s x11.87]	(38.4332s x1.86 from start)
+      (leave) Generate queries                   	[2.8418s x12.63]	(38.4333s x1.86 from start)
+    (leave) Generate R1CS proving key          	[2.8427s x12.62]	(38.4333s x1.86 from start)
+    (enter) Generate R1CS verification key     	[             ]	(38.4333s x1.86 from start)
+      (enter) Call to reduced_pairing<bn128_pp>  	[             ]	(38.4333s x1.86 from start)
+        (enter) Call to pairing<bn128_pp>          	[             ]	(38.4333s x1.86 from start)
+          (enter) Call to bn128_ate_precompute_G1    	[             ]	(38.4333s x1.86 from start)
+          (leave) Call to bn128_ate_precompute_G1    	[0.0000s x1.08]	(38.4334s x1.86 from start)
+          (enter) Call to bn128_ate_precompute_G2    	[             ]	(38.4334s x1.86 from start)
+          (leave) Call to bn128_ate_precompute_G2    	[0.0001s x1.01]	(38.4335s x1.86 from start)
+          (enter) Call to miller_loop<bn128_pp>      	[             ]	(38.4335s x1.86 from start)
+          (leave) Call to miller_loop<bn128_pp>      	[0.0003s x3.41]	(38.4338s x1.86 from start)
+        (leave) Call to pairing<bn128_pp>          	[0.0005s x2.46]	(38.4339s x1.86 from start)
+        (enter) Call to bn128_final_exponentiation 	[             ]	(38.4339s x1.86 from start)
+        (leave) Call to bn128_final_exponentiation 	[0.0011s x3.83]	(38.4350s x1.86 from start)
+      (leave) Call to reduced_pairing<bn128_pp>  	[0.0017s x3.34]	(38.4350s x1.86 from start)
+      (enter) Encode gamma_ABC for R1CS verification key	[             ]	(38.4353s x1.86 from start)
+        . DONE!
+      (leave) Encode gamma_ABC for R1CS verification key	[0.0047s x12.24]	(38.4400s x1.86 from start)
+    (leave) Generate R1CS verification key     	[0.0067s x13.39]	(38.4400s x1.86 from start)
+  (leave) Call to r1cs_gg_ppzksnark_generator	[6.0583s x6.47]	(38.4400s x1.86 from start)
+  * G1 elements in PK: 1464850
+  * Non-zero G1 elements in PK: 1391034
+  * G2 elements in PK: 357215
+  * Non-zero G2 elements in PK: 283399
+  * PK size in bits: 517101233
+  * G1 elements in VK: 7
+  * G2 elements in VK: 2
+  * GT elements in VK: 1
+  * VK size in bits: 3506
+
+  * Peak vsize (physical memory+swap) in mebibytes (after generator): 5040
+
+================================================================================
+Preprocess verification key
+================================================================================
+
+  (enter) Call to r1cs_gg_ppzksnark_verifier_process_vk	[             ]	(38.4542s x1.87 from start)
+    (enter) Call to bn128_ate_precompute_G2    	[             ]	(38.4542s x1.87 from start)
+    (leave) Call to bn128_ate_precompute_G2    	[0.0001s x1.02]	(38.4543s x1.87 from start)
+    (enter) Call to bn128_ate_precompute_G2    	[             ]	(38.4543s x1.87 from start)
+    (leave) Call to bn128_ate_precompute_G2    	[0.0001s x1.00]	(38.4544s x1.87 from start)
+  (leave) Call to r1cs_gg_ppzksnark_verifier_process_vk	[0.0002s x0.99]	(38.4544s x1.87 from start)
+
+================================================================================
+R1CS GG-ppzkSNARK Prover
+================================================================================
+
+  (enter) Call to r1cs_gg_ppzksnark_prover   	[             ]	(38.4544s x1.87 from start)
+    (enter) Compute the polynomial H           	[             ]	(38.4544s x1.87 from start)
+      (enter) Call to r1cs_to_qap_witness_map    	[             ]	(38.4544s x1.87 from start)
+        (enter) Compute evaluation of polynomials A, B on set S	[             ]	(38.4560s x1.87 from start)
+        (leave) Compute evaluation of polynomials A, B on set S	[0.5567s x1.01]	(39.0127s x1.85 from start)
+        (enter) Compute coefficients of polynomial A	[             ]	(39.0128s x1.85 from start)
+        (leave) Compute coefficients of polynomial A	[0.2850s x11.41]	(39.2978s x1.92 from start)
+        (enter) Compute coefficients of polynomial B	[             ]	(39.2978s x1.92 from start)
+        (leave) Compute coefficients of polynomial B	[0.2904s x11.23]	(39.5882s x1.99 from start)
+        (enter) Compute ZK-patch                   	[             ]	(39.5883s x1.99 from start)
+        (leave) Compute ZK-patch                   	[0.0111s x12.31]	(39.5994s x1.99 from start)
+        (enter) Compute evaluation of polynomial A on set T	[             ]	(39.5994s x1.99 from start)
+        (leave) Compute evaluation of polynomial A on set T	[0.3159s x11.49]	(39.9153s x2.07 from start)
+        (enter) Compute evaluation of polynomial B on set T	[             ]	(39.9154s x2.07 from start)
+        (leave) Compute evaluation of polynomial B on set T	[0.2918s x11.59]	(40.2071s x2.14 from start)
+        (enter) Compute evaluation of polynomial H on set T	[             ]	(40.2072s x2.14 from start)
+          (enter) Compute evaluation of polynomial C on set S	[             ]	(40.2203s x2.14 from start)
+          (leave) Compute evaluation of polynomial C on set S	[0.1440s x2.58]	(40.3643s x2.14 from start)
+          (enter) Compute coefficients of polynomial C	[             ]	(40.3643s x2.14 from start)
+          (leave) Compute coefficients of polynomial C	[0.2836s x11.67]	(40.6479s x2.21 from start)
+          (enter) Compute evaluation of polynomial C on set T	[             ]	(40.6480s x2.21 from start)
+          (leave) Compute evaluation of polynomial C on set T	[0.2659s x11.47]	(40.9139s x2.27 from start)
+          (enter) Divide by Z on set T               	[             ]	(40.9350s x2.28 from start)
+          (leave) Divide by Z on set T               	[0.2675s x1.94]	(41.2024s x2.27 from start)
+        (leave) Compute evaluation of polynomial H on set T	[0.9953s x7.79]	(41.2025s x2.27 from start)
+        (enter) Compute coefficients of polynomial H	[             ]	(41.2025s x2.27 from start)
+        (leave) Compute coefficients of polynomial H	[0.2671s x10.88]	(41.4696s x2.33 from start)
+        (enter) Compute sum of H and ZK-patch      	[             ]	(41.4696s x2.33 from start)
+        (leave) Compute sum of H and ZK-patch      	[0.0043s x7.54]	(41.4739s x2.33 from start)
+      (leave) Call to r1cs_to_qap_witness_map    	[3.0195s x8.25]	(41.4739s x2.33 from start)
+    (leave) Compute the polynomial H           	[3.0213s x8.27]	(41.4757s x2.33 from start)
+    (enter) Compute the proof                  	[             ]	(41.4757s x2.33 from start)
+      (enter) Compute evaluation to A-query      	[             ]	(41.4757s x2.33 from start)
+      (enter) Process scalar vector              	[             ]	(41.4772s x2.33 from start)
+        * Elements of w skipped: 203310 (56.92%)
+        * Elements of w processed with special addition: 78610 (22.01%)
+        * Elements of w remaining: 75294 (21.08%)
+      (leave) Process scalar vector              	[0.0391s x5.98]	(41.5163s x2.34 from start)
+      (leave) Compute evaluation to A-query      	[0.1629s x10.82]	(41.6387s x2.36 from start)
+      (enter) Compute evaluation to B-query      	[             ]	(41.6388s x2.36 from start)
+      (enter) Process scalar vector              	[             ]	(41.6388s x2.36 from start)
+        * Elements of w skipped: 149561 (52.77%)
+        * Elements of w processed with special addition: 76554 (27.01%)
+        * Elements of w remaining: 57283 (20.21%)
+      (leave) Process scalar vector              	[0.1211s x2.84]	(41.7599s x2.37 from start)
+      (leave) Compute evaluation to B-query      	[0.4806s x8.63]	(42.1194s x2.44 from start)
+      (enter) Compute evaluation to H-query      	[             ]	(42.1198s x2.44 from start)
+      (leave) Compute evaluation to H-query      	[0.6508s x13.69]	(42.7705s x2.61 from start)
+      (enter) Compute evaluation to L-query      	[             ]	(42.7706s x2.61 from start)
+      (enter) Process scalar vector              	[             ]	(42.7706s x2.61 from start)
+        * Elements of w skipped: 203309 (56.92%)
+        * Elements of w processed with special addition: 78608 (22.01%)
+        * Elements of w remaining: 75289 (21.08%)
+      (leave) Process scalar vector              	[0.0464s x5.88]	(42.8170s x2.61 from start)
+      (leave) Compute evaluation to L-query      	[0.1813s x10.78]	(42.9519s x2.64 from start)
+    (leave) Compute the proof                  	[1.4771s x11.36]	(42.9528s x2.64 from start)
+  (leave) Call to r1cs_gg_ppzksnark_prover   	[4.4985s x9.28]	(42.9528s x2.64 from start)
+  * G1 elements in proof: 2
+  * G2 elements in proof: 1
+  * Proof size in bits: 1019
+
+  * Peak vsize (physical memory+swap) in mebibytes (after prover): 5058
+
+================================================================================
+R1CS GG-ppzkSNARK Verifier
+================================================================================
+
+  (enter) Call to r1cs_gg_ppzksnark_verifier_strong_IC	[             ]	(42.9529s x2.64 from start)
+    (enter) Call to r1cs_gg_ppzksnark_verifier_process_vk	[             ]	(42.9529s x2.64 from start)
+      (enter) Call to bn128_ate_precompute_G2    	[             ]	(42.9529s x2.64 from start)
+      (leave) Call to bn128_ate_precompute_G2    	[0.0001s x1.01]	(42.9530s x2.64 from start)
+      (enter) Call to bn128_ate_precompute_G2    	[             ]	(42.9530s x2.64 from start)
+      (leave) Call to bn128_ate_precompute_G2    	[0.0001s x1.00]	(42.9531s x2.64 from start)
+    (leave) Call to r1cs_gg_ppzksnark_verifier_process_vk	[0.0002s x1.00]	(42.9531s x2.64 from start)
+    (enter) Call to r1cs_gg_ppzksnark_online_verifier_strong_IC	[             ]	(42.9531s x2.64 from start)
+      (enter) Call to r1cs_gg_ppzksnark_online_verifier_weak_IC	[             ]	(42.9531s x2.64 from start)
+        (enter) Accumulate input                   	[             ]	(42.9531s x2.64 from start)
+        (leave) Accumulate input                   	[0.0003s x4.88]	(42.9534s x2.64 from start)
+        (enter) Check if the proof is well-formed  	[             ]	(42.9535s x2.64 from start)
+        (leave) Check if the proof is well-formed  	[0.0000s x1.06]	(42.9535s x2.64 from start)
+        (enter) Online pairing computations        	[             ]	(42.9535s x2.64 from start)
+          (enter) Check QAP divisibility             	[             ]	(42.9535s x2.64 from start)
+            (enter) Call to bn128_ate_precompute_G1    	[             ]	(42.9535s x2.64 from start)
+            (leave) Call to bn128_ate_precompute_G1    	[0.0000s x1.05]	(42.9535s x2.64 from start)
+            (enter) Call to bn128_ate_precompute_G2    	[             ]	(42.9535s x2.64 from start)
+            (leave) Call to bn128_ate_precompute_G2    	[0.0001s x42.18]	(42.9536s x2.64 from start)
+            (enter) Call to bn128_ate_precompute_G1    	[             ]	(42.9536s x2.64 from start)
+            (leave) Call to bn128_ate_precompute_G1    	[0.0000s x1.02]	(42.9536s x2.64 from start)
+            (enter) Call to bn128_ate_precompute_G1    	[             ]	(42.9536s x2.64 from start)
+            (leave) Call to bn128_ate_precompute_G1    	[0.0000s x1.02]	(42.9536s x2.64 from start)
+            (enter) Call to miller_loop<bn128_pp>      	[             ]	(42.9536s x2.64 from start)
+            (leave) Call to miller_loop<bn128_pp>      	[0.0002s x6.11]	(42.9538s x2.64 from start)
+            (enter) Call to double_miller_loop<bn128_pp>	[             ]	(42.9538s x2.64 from start)
+            (leave) Call to double_miller_loop<bn128_pp>	[0.0003s x1.42]	(42.9541s x2.64 from start)
+            (enter) Call to bn128_final_exponentiation 	[             ]	(42.9541s x2.64 from start)
+            (leave) Call to bn128_final_exponentiation 	[0.0003s x1.00]	(42.9544s x2.64 from start)
+          (leave) Check QAP divisibility             	[0.0009s x5.71]	(42.9544s x2.64 from start)
+        (leave) Online pairing computations        	[0.0009s x5.63]	(42.9544s x2.64 from start)
+      (leave) Call to r1cs_gg_ppzksnark_online_verifier_weak_IC	[0.0013s x5.31]	(42.9544s x2.64 from start)
+    (leave) Call to r1cs_gg_ppzksnark_online_verifier_strong_IC	[0.0013s x5.26]	(42.9544s x2.64 from start)
+  (leave) Call to r1cs_gg_ppzksnark_verifier_strong_IC	[0.0015s x4.67]	(42.9544s x2.64 from start)
+
+  * Peak vsize (physical memory+swap) in mebibytes (after verifier): 5058
+* The verification result is: PASS
+
+================================================================================
+R1CS GG-ppzkSNARK Online Verifier
+================================================================================
+
+  (enter) Call to r1cs_gg_ppzksnark_online_verifier_strong_IC	[             ]	(42.9544s x2.64 from start)
+    (enter) Call to r1cs_gg_ppzksnark_online_verifier_weak_IC	[             ]	(42.9544s x2.64 from start)
+      (enter) Accumulate input                   	[             ]	(42.9544s x2.64 from start)
+      (leave) Accumulate input                   	[0.0003s x5.04]	(42.9548s x2.64 from start)
+      (enter) Check if the proof is well-formed  	[             ]	(42.9548s x2.64 from start)
+      (leave) Check if the proof is well-formed  	[0.0000s x1.09]	(42.9548s x2.64 from start)
+      (enter) Online pairing computations        	[             ]	(42.9548s x2.64 from start)
+        (enter) Check QAP divisibility             	[             ]	(42.9548s x2.64 from start)
+          (enter) Call to bn128_ate_precompute_G1    	[             ]	(42.9548s x2.64 from start)
+          (leave) Call to bn128_ate_precompute_G1    	[0.0000s x1.05]	(42.9548s x2.64 from start)
+          (enter) Call to bn128_ate_precompute_G2    	[             ]	(42.9548s x2.64 from start)
+          (leave) Call to bn128_ate_precompute_G2    	[0.0001s x1.00]	(42.9549s x2.64 from start)
+          (enter) Call to bn128_ate_precompute_G1    	[             ]	(42.9549s x2.64 from start)
+          (leave) Call to bn128_ate_precompute_G1    	[0.0000s x1.03]	(42.9549s x2.64 from start)
+          (enter) Call to bn128_ate_precompute_G1    	[             ]	(42.9549s x2.64 from start)
+          (leave) Call to bn128_ate_precompute_G1    	[0.0000s x1.02]	(42.9549s x2.64 from start)
+          (enter) Call to miller_loop<bn128_pp>      	[             ]	(42.9549s x2.64 from start)
+          (leave) Call to miller_loop<bn128_pp>      	[0.0002s x1.00]	(42.9551s x2.64 from start)
+          (enter) Call to double_miller_loop<bn128_pp>	[             ]	(42.9551s x2.64 from start)
+          (leave) Call to double_miller_loop<bn128_pp>	[0.0003s x149.82]	(42.9554s x2.64 from start)
+          (enter) Call to bn128_final_exponentiation 	[             ]	(42.9554s x2.64 from start)
+          (leave) Call to bn128_final_exponentiation 	[0.0003s x1.00]	(42.9557s x2.64 from start)
+        (leave) Check QAP divisibility             	[0.0009s x47.60]	(42.9557s x2.64 from start)
+      (leave) Online pairing computations        	[0.0009s x47.02]	(42.9557s x2.64 from start)
+    (leave) Call to r1cs_gg_ppzksnark_online_verifier_weak_IC	[0.0012s x34.83]	(42.9557s x2.64 from start)
+  (leave) Call to r1cs_gg_ppzksnark_online_verifier_strong_IC	[0.0013s x34.27]	(42.9557s x2.64 from start)
+
+================================================================================
+R1CS GG-ppzkSNARK Affine Verifier
+================================================================================
+
+Affine verifier is not supported; not testing anything.
+(leave) Call to run_r1cs_gg_ppzksnark      	[10.5740s x7.67]	(42.9557s x2.64 from start)
