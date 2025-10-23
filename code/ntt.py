@@ -160,11 +160,13 @@ def fast_coset_divide( lhs, rhs, offset, primitive_root, root_order ): # clean d
     scaled_rhs = rhs.scale(offset)
     
     lhs_coefficients = scaled_lhs.coefficients[:(lhs.degree()+1)]
-    while len(lhs_coefficients) < order:
-        lhs_coefficients += [field.zero()]
+    len_lhs_coefficients = len(lhs_coefficients)
+    repetions = (order - len_lhs_coefficients)
+    lhs_coefficients += [field.zero()] * repetions
     rhs_coefficients = scaled_rhs.coefficients[:(rhs.degree()+1)]
-    while len(rhs_coefficients) < order:
-        rhs_coefficients += [field.zero()]
+    len_rhs_coefficients = len(rhs_coefficients)
+    repetions = (order - len_rhs_coefficients)
+    rhs_coefficients += [field.zero()] * repetions
 
     lhs_codeword = ntt(root, lhs_coefficients)
     rhs_codeword = ntt(root, rhs_coefficients)

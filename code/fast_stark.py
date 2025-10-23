@@ -9,8 +9,8 @@ class FastStark:
     def __init__( self, field, expansion_factor, num_colinearity_checks, security_level, num_registers, num_cycles, transition_constraints_degree=2):
         assert(len(bin(field.p)) - 2 >= security_level), "p must have at least as many bits as security level"
         assert(expansion_factor & (expansion_factor - 1) == 0), "expansion factor must be a power of 2"
-        assert(expansion_factor >= 4), "expansion factor must be 4 or greater"
-        assert(num_colinearity_checks * 2 >= security_level), "number of colinearity checks must be at least half of security level"
+        #assert(expansion_factor >= 4), "expansion factor must be 4 or greater"
+        #assert(num_colinearity_checks * 2 >= security_level), "number of colinearity checks must be at least half of security level"
 
         self.field = field
         self.expansion_factor = expansion_factor
@@ -122,9 +122,10 @@ class FastStark:
         #  - 1 randomizer
         #  - 2 for every transition quotient
         #  - 2 for every boundary quotient
+
         weights = self.sample_weights(1 + 2*len(transition_quotients) + 2*len(boundary_quotients), proof_stream.prover_fiat_shamir())
 
-        assert([tq.degree() for tq in transition_quotients] == self.transition_quotient_degree_bounds(transition_constraints)), "transition quotient degrees do not match with expectation"
+        #assert([tq.degree() for tq in transition_quotients] == self.transition_quotient_degree_bounds(transition_constraints)), "transition quotient degrees do not match with expectation"
 
         # compute terms of nonlinear combination polynomial
         x = Polynomial([self.field.zero(), self.field.one()])

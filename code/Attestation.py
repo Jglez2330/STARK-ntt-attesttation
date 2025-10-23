@@ -73,7 +73,7 @@ class Attestation:
                     ret = self.field.one()
             #Create the state
             neighbours = [FieldElement(neighbour, self.field) for neighbour in neighbours]
-            state += [[nonce, current_node, next_node ] + neighbours + [call_stack_v, call, ret, initial]]
+            state += [[nonce, current_node, next_node ] + neighbours + [call_stack_v, call, ret, initial, end]]
             #Reset call and ret
             call = self.field.zero()
             ret = self.field.zero()
@@ -110,6 +110,7 @@ class Attestation:
         constraints = []
 
         #Set everything to zero at the beginning
+        # (position, register_index, value)
         for i in range(self.num_registers-1):
             constraints += [(0, i, self.field.zero())]
         constraints += [(0, self.num_registers-1, self.field.one())]  # Set the initial state to one
@@ -145,6 +146,7 @@ class Attestation:
         # Check that the transition was performed correctly
         lhs = previous_state[2]
         rhs = next_state[1]
+
         #Check that is not the initial state
         initial_pol = MPolynomial.constant(self.field.one()) - previous_state[-1]
         air += [(lhs-rhs)*(initial_pol)]

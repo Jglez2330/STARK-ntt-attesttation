@@ -68,21 +68,49 @@ if __name__ == '__main__':
     path = "/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/ZEKRA-STARK/embench-iot-applications/aha-mont64/numified_path"
     #Time the execution
 
+    #cfg = {0: [1, 2], 1: [3], 2: [4], 3: [5], 4: [], 5:[]} # Example CFG
+    #        +-----+
+    #        |  0  | jmp 1, jmp 2 main
+    #        +-----+
+    #         /   \
+    #        v     v
+    #     +-----+ +-----+
+    #     |  1  | |  2  | call 3 5, jmp 4 true, false
+    #     +-----+ +-----+
+    #        |       |
+    #        v       v
+    #     +-----+ +-----+
+    #     |  3  | |  4  | ret 5 accep, rech
+    #     +-----+ +-----+
+    #        |
+    #        v
+    #     +-----+
+    #     |  5  |
+    #     +-----+#
+    # Execution path: # start 0 -> 1 -> 3 -> 5 end#
+   # path = "/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/code/example_trace.txt"
+
     a = Attestation(cfg)
     one_h = FieldElement(100, Field.main())
     execution = load_trace_from_file(path)
+    start = time.time()
     state = a.trace(one_h, execution["start"], execution["end"], execution["path"])
     boundary = a.boundary_constraints(one_h,a.start,a.end)
 
-    stark = FastStark(Field.main(), 4, 2, 2, a.num_registers, a.num_cycles, transition_constraints_degree=a.max_adjacency+1)
+    stark = FastStark(Field.main(), 8, 43, 128, a.num_registers, a.num_cycles, transition_constraints_degree=a.max_adjacency+1)
     air  = a.transition_constraints(stark.omicron)
     transition_zerofier, transition_zerofier_codeword, transition_zerofier_root = stark.preprocess()
+    end = time.time()
+    print("Execution time setup: ", end - start)
     start = time.time()
     proof = stark.prove(state, air, boundary, transition_zerofier, transition_zerofier_codeword)
     end = time.time()
+    start_proving = time.time()
     verdict = stark.verify(proof, air, boundary, transition_zerofier_root)
+    end_proving = time.time()
     print(verdict)
     # print("Execution time: ", end - start)
     print("Execution time: ", end - start)
+    print("Execution time proving: ", end_proving - start_proving)
     #Size of the proof
     print("Size of the proof: ", len(proof))

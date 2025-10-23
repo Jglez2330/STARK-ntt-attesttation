@@ -1,0 +1,4 @@
+initial_node=0 final_node=5
+jmp 1
+call 3 4
+ret 5
