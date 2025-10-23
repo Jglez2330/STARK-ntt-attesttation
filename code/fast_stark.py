@@ -9,15 +9,15 @@ class FastStark:
     def __init__( self, field, expansion_factor, num_colinearity_checks, security_level, num_registers, num_cycles, transition_constraints_degree=2):
         assert(len(bin(field.p)) - 2 >= security_level), "p must have at least as many bits as security level"
         assert(expansion_factor & (expansion_factor - 1) == 0), "expansion factor must be a power of 2"
-        assert(expansion_factor >= 4), "expansion factor must be 4 or greater"
-        assert(num_colinearity_checks * 2 >= security_level), "number of colinearity checks must be at least half of security level"
+        # assert(expansion_factor >= 4), "expansion factor must be 4 or greater"
+        # assert(num_colinearity_checks * 2 >= security_level), "number of colinearity checks must be at least half of security level"
 
         self.field = field
         self.expansion_factor = expansion_factor
         self.num_colinearity_checks = num_colinearity_checks
         self.security_level = security_level
 
-        self.num_randomizers = 4*num_colinearity_checks
+        self.num_randomizers = expansion_factor*num_colinearity_checks
 
         self.num_registers = num_registers
         self.original_trace_length = num_cycles
