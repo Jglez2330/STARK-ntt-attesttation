@@ -125,7 +125,7 @@ class FastStark:
 
         weights = self.sample_weights(1 + 2*len(transition_quotients) + 2*len(boundary_quotients), proof_stream.prover_fiat_shamir())
 
-        #assert([tq.degree() for tq in transition_quotients] == self.transition_quotient_degree_bounds(transition_constraints)), "transition quotient degrees do not match with expectation"
+        assert([tq.degree() for tq in transition_quotients] == self.transition_quotient_degree_bounds(transition_constraints)), "transition quotient degrees do not match with expectation"
 
         # compute terms of nonlinear combination polynomial
         x = Polynomial([self.field.zero(), self.field.one()])
