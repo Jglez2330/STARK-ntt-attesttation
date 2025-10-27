@@ -1,0 +1,117 @@
+const.JMP = 0
+const.CALL = 1
+const.RET = 2
+const.STACK_SIZE = 1024
+const.STACK_CNTR = 0
+const.STACK_ADDRESS = 4
+
+proc.load_single_addr.1
+    #The stack contains the index of the current execution step
+    #The exectuion trace is on the advice map, it is first accessed
+    #Store the index in a local
+    loc_store.0
+    # The execution trace is stored starting at advice_map index 256, 256, 0, index
+    push.256
+    push.0
+    push.0
+    loc_load.0
+    adv.push_mapval #Loads the value from the map into the advice stack 
+    dropw
+    adv_push.1 #Move the value from the advice stack to the main stack
+end
+
+proc.load_double_addr.1
+    #The stack contains the index of the current execution step
+    #The exectuion trace is on the advice map, it is first accessed
+    #Store the index in a local
+    loc_store.0
+    # The execution trace is stored starting at advice_map index 256, 256, 0, index
+    push.256
+    push.0
+    push.0
+    loc_load.0
+    adv.push_mapval #Loads the value from the map into the advice stack 
+    dropw
+    adv_push.2 #Move the value from the advice stack to the main stack
+end
+
+proc.load_exec_trace.1
+    #The stack contains the index of the current execution step
+    #The exectuion trace is on the advice map, it is first accessed
+    #Store the index in a local
+    loc_store.0
+    # The execution trace is stored starting at advice_map index 256, 256, 0, index
+    push.256
+    push.256
+    push.0
+    loc_load.0
+    adv.push_mapval #Loads the value from the map into the advice stack 
+    dropw
+    adv_push.1 #Move the value from the advice stack to the main stack
+    #The stack now contains the operation (jmp, call, ret)
+    dup #Duplicate the operation to check
+    eq.CALL
+    if.true
+        loc_load.0 #Load the index again
+        exec.load_double_addr
+        push.2 #Indicate double address
+        # 0 -> return address
+        # 1 -> call address
+        # 2 -> operation
+    else
+        loc_load.0 #Load the index again
+        exec.load_single_addr
+        push.1 #Indicate single address
+        # 0 -> address
+        # 1 -> operation
+    end
+end
+
+proc.store_value_shadow_stack
+    #0 -> value to store
+    push.STACK_ADDRESS
+    push.STACK_CNTR
+    # 0 -> STACK_CNTR
+    # 1 -> STACK_ADDRESS
+    # 2 -> value to store
+    add
+    # 0 -> address to store
+
+end
+
+proc.main.5
+    #Store the start and end elements
+    loc_store.1 #END
+    loc_store.0 #START
+    push.0
+    loc_store.2 #Initilize counter to 0
+    #Check that start matches the start of the execution trace
+    exec.load_exec_trace
+    eq.2 #Check if operation is CALL
+    if.true
+        
+        loc_store.3 #Store the first address
+        loc_store.4 #Store the ret address
+        # 0 -> operation
+    else
+        loc_store.3 #Store the first address
+        # 0 -> operation
+    end
+    loc_load.0
+    #0 -> start
+    #1 -> operation
+    eq #Check if start matches
+    if.true
+       nop 
+    end
+end
+
+
+begin
+    exec.main
+    push.3
+    push.5
+    add
+    swap
+    drop
+end

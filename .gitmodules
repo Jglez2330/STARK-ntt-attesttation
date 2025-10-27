@@ -4,3 +4,6 @@
 [submodule "poseidon-hash"]
 	path = poseidon-hash
 	url = https://github.com/ingonyama-zk/poseidon-hash
+[submodule "miden/starkra/miden-vm"]
+	path = miden/starkra/miden-vm
+	url = https://github.com/0xMiden/miden-vm.git
