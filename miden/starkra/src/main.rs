@@ -30,11 +30,11 @@ fn load_execution_trace(path: &str) -> (Vec<(Word, Vec<Felt>)>, Felt, Felt) {
 
     advice_map.push((
         Word::new([Felt::new(256), Felt::new(0), Felt::new(0), Felt::new(0)]),
-        vec![Felt::new(0x0)],
+        vec![Felt::new(0x1)],
     ));
     advice_map.push((
         Word::new([Felt::new(256), Felt::new(0), Felt::new(0), Felt::new(1)]),
-        vec![Felt::new(0x1), Felt::new(0x10)],
+        vec![Felt::new(0x2), Felt::new(0x10)],
     ));
     advice_map.push((
         Word::new([Felt::new(256), Felt::new(0), Felt::new(0), Felt::new(2)]),
@@ -57,18 +57,26 @@ fn load_execution_trace(path: &str) -> (Vec<(Word, Vec<Felt>)>, Felt, Felt) {
     (advice_map, start, end)
 }
 
-// fn load_cfg(path: &str) -> Vec<(Word, Vec<Felt>)>{
-//
-//     let cfg = Vec::new();
-//
-//     cfg.push((
-//         Word::new([Felt::new(0), Felt::new(0), Felt::new(0), Felt::new(0)]),
-//         vec![Felt::new(0x0), Felt::new(0x1)],
-//     ));
-//
-//
-//     cfg
-// }
+fn load_cfg(path: &str) -> Vec<(Word, Vec<Felt>)>{
+
+    let mut cfg = Vec::new();
+
+    cfg.push((
+        Word::new([Felt::new(0), Felt::new(0), Felt::new(0), Felt::new(0)]),
+        vec![Felt::new(0x1)],
+    ));
+    cfg.push((
+        Word::new([Felt::new(0), Felt::new(0), Felt::new(0), Felt::new(1)]),
+        vec![Felt::new(0x2)],
+    ));
+    cfg.push((
+        Word::new([Felt::new(0), Felt::new(0), Felt::new(0), Felt::new(2)]),
+        vec![Felt::new(0x10)],
+    ));
+
+
+    cfg
+}
 
 fn main() {
     // instantiate the assembler
@@ -78,8 +86,10 @@ fn main() {
     // the trace contains the sequence of jumps, calls and returns
     // As well as the start and end addresses
     let (trace, start, end) = load_execution_trace("execution_trace.txt");
+    let cfg = load_cfg("cfg.txt");
 
     let mut advice_inputs = AdviceInputs::default().with_map(trace.clone());
+    let advice_inputs = advice_inputs.with_map(cfg.clone());
     let mut stack_values = StackInputs::try_from_ints(vec![start.as_int(), end.as_int()]).unwrap();
 
     // this is our program, we compile it from assembly code
