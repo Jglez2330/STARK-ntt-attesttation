@@ -1,0 +1,35 @@
+Loading CFG from:  ../ZEKRA-STARK/embench-iot-applications/wikisort/numified_adjlist
+Loading execution trace from:  ../ZEKRA-STARK/embench-iot-applications/wikisort/numified_path
+Tracing...
+Generating boundary constraints...
+Setting up STARK...
+Generating AIR...
+Preprocessing...
+Execution time pre:  4.719037055969238
+Generating proof...
+randomize
+interpolate
+boundary quotients
+commit boundary quotients
+transition constraints
+transition quotients
+randomizer
+weights
+combination terms
+combine
+evaluate combination
+fri prove
+process indices
+open boundary quotients
+open randomizer
+open transition zerofier
+serialize proof
+Execution time:  1117.332849264145
+Verifying proof...
+Execution time verif:  36.19894003868103
+Verdict: 
+True
+Execution time:  1117.332849264145
+Execution time verif:  36.19894003868103
+Execution time pre:  4.719037055969238
+Size of the proof:  3614460

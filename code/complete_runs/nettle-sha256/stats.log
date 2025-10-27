@@ -1,0 +1,16 @@
+
+./embench-iot-applications/nettle-sha256
+Min addr: 0x400000
+Max addr: 0x807fff (bitwidth=24)
+CFG has 184 nodes and 265 edges
+Adjacency list max_neighbors: 4 ['101', '112', '115', '86']
+Bucket-rems pairs (levels) required to express the encoded adjacency list: 3
+Execution path died because it: reached an exit
+Execution path length pre compression: 306
+Number of consecutively repeated sequences: 10
+Average (mean) length of sequences: 2.70 (std=3.16)
+Average (mean) number of sequence repetitions: 17.60 (std=19.64)
+Execution path length post compression: 117
+Max stack depth: 6
+Execution path is valid according to the adjlist: True
+
