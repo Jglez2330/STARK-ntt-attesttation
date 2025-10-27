@@ -3,14 +3,18 @@ const.CALL = 1
 const.RET = 2
 const.STACK_SIZE = 1024
 const.STACK_CNTR = 0
-const.STACK_ADDRESS = 4
+const.STACK_INTGRITY = 1
+const.START_INTGRITY = 2
+const.END_INTGRITY = 3
+const.EXE_INTEGRITY = 4
+const.STACK_ADDRESS = 8
 
 proc.load_single_addr.1
     #The stack contains the index of the current execution step
     #The exectuion trace is on the advice map, it is first accessed
     #Store the index in a local
     loc_store.0
-    # The execution trace is stored starting at advice_map index 256, 256, 0, index
+    # The execution trace is stored starting at advice_map index 256, 0, 0, index
     push.256
     push.0
     push.0
@@ -21,21 +25,39 @@ proc.load_single_addr.1
 end
 
 proc.load_double_addr.1
+    # 0 -> index
+    # 1 -> operation
     #The stack contains the index of the current execution step
     #The exectuion trace is on the advice map, it is first accessed
     #Store the index in a local
     loc_store.0
-    # The execution trace is stored starting at advice_map index 256, 256, 0, index
+    #0 -> operation
+    # The execution trace is stored starting at advice_map index 256, 0, 0, index
     push.256
     push.0
     push.0
     loc_load.0
+    # 0 -> index
+    # 1 -> 0
+    # 2 -> 0
+    # 3 -> 256
+    # 4 -> operation
     adv.push_mapval #Loads the value from the map into the advice stack 
+    # 0 -> index
+    # 1 -> 0
+    # 2 -> 0
+    # 3 -> 256
+    # 4 -> operation
     dropw
+    # 0-> operation
     adv_push.2 #Move the value from the advice stack to the main stack
+    # 0 -> call address
+    # 1 -> return address
+    # 2 -> operation
 end
 
 proc.load_exec_trace.1
+    # 0 -> index
     #The stack contains the index of the current execution step
     #The exectuion trace is on the advice map, it is first accessed
     #Store the index in a local
@@ -45,40 +67,157 @@ proc.load_exec_trace.1
     push.256
     push.0
     loc_load.0
+    # 0 -> index
+    # 1 -> 0
+    #2 -> 256
+    #3 -> 256
     adv.push_mapval #Loads the value from the map into the advice stack 
+    # 0 -> index
+    # 1 -> 0
+    #2 -> 256
+    #3 -> 256
     dropw
+    #0 -> None from this context
     adv_push.1 #Move the value from the advice stack to the main stack
+    # 0  -> operation
     #The stack now contains the operation (jmp, call, ret)
     dup #Duplicate the operation to check
+    #0 -> operation
+    #1 -> operation
     eq.CALL
+    # 0 -> is_call
+    #1 -> operation
     if.true
         loc_load.0 #Load the index again
+        # 0 -> index
+        #1 -> operation
         exec.load_double_addr
         push.2 #Indicate double address
+        # 0 -> call address
+        # 1 -> return address
+        # 2 -> operation
+        swap
         # 0 -> return address
         # 1 -> call address
         # 2 -> operation
+        exec.store_value_shadow_stack
+        # 0 -> call address
+        # 1 -> operation
     else
         loc_load.0 #Load the index again
         exec.load_single_addr
         push.1 #Indicate single address
         # 0 -> address
         # 1 -> operation
+        dup.1 #Duplicate operation to check
+        #0 -> operation
+        #1 -> address
+        #2 -> operation
+        eq.RET #Check if operation is RET
+        #0 -> is_ret
+        #1 -> address
+        #2 -> operation
+        if.true
+            #It's a RET, pop from shadow stack
+            exec.pop_value_shadow_stack
+            #0 -> call address
+            #1 -> return address
+            #2 -> operation
+            dup.1
+            #0 -> return address
+            #1 -> call address
+            #2 -> return address
+            #3 -> operation
+            eq #Check if the ret matches the call
+            #0 -> is_equal
+            #1 -> return address
+            #2 -> operation
+            if.false
+                push.1
+                # 0 -> 1
+                # 1 -> return address
+                # 2 -> operation
+                push.STACK_INTGRITY
+                #0 -> address of integrity check
+                #1 -> 1
+                #2 -> return address
+                #3 -> operation
+                mem_store
+                #0 -> return address
+                #1 -> operation
+            end
+            #assert.err="Stack integrity violation: RET address does not match CALL address"
+        else
+            #It's a JMP, do nothing
+            #0 -> address
+            #1 -> operation
+        end
     end
 end
 
 proc.store_value_shadow_stack
     #0 -> value to store
-    push.STACK_ADDRESS
+    #1 -> call address
+    #2 -> operation
     push.STACK_CNTR
+    #0 -> counter address
+    #1 -> value to store
+    mem_load
+    push.STACK_ADDRESS
     # 0 -> STACK_CNTR
     # 1 -> STACK_ADDRESS
     # 2 -> value to store
     add
     # 0 -> address to store
-
+    # 1 -> value to store
+    mem_store
+    #0 -> call address
+    #1 -> operation
+    push.STACK_CNTR
+    #0 -> counter address
+    #...
+    mem_load
+    #0 -> current counter
+    add.1
+    # 0 -> new counter
+    push.STACK_CNTR
+    # 0 -> counter address
+    # 1 -> new counter
+    mem_store
+    # 0 -> call address
+    #1 -> operation
 end
 
+proc.pop_value_shadow_stack
+    #0 -> return address
+    #1 -> operation
+    push.STACK_CNTR
+    #0 -> counter address
+    mem_load
+    #0 -> current counter
+    sub.1
+    #0 -> new counter
+    dup
+    #0 -> new counter
+    #1 -> new counter
+    add.STACK_ADDRESS
+    #0 -> address to load
+    #1 -> new counter
+    mem_load
+    #0 -> value popped
+    #1 -> new counter
+    swap
+    #0 -> new counter
+    #1 -> value popped
+    push.STACK_CNTR
+    #0 -> counter address
+    #1 -> new counter
+    #2  ->value popped
+    mem_store
+    #0 -> value popped call address
+    #1  -> return address
+    #2 -> operation
+end
 proc.main.5
     #Store the start and end elements
     loc_store.1 #END
@@ -87,7 +226,10 @@ proc.main.5
     loc_store.2 #Initilize counter to 0
     #Check that start matches the start of the execution trace
     exec.load_exec_trace
-    eq.2 #Check if operation is CALL
+    #0 -> next address
+    #1 -> operation
+
+    eq.CALL #Check if operation is CALL
     if.true
         
         loc_store.3 #Store the first address
@@ -96,13 +238,6 @@ proc.main.5
     else
         loc_store.3 #Store the first address
         # 0 -> operation
-    end
-    loc_load.0
-    #0 -> start
-    #1 -> operation
-    eq #Check if start matches
-    if.true
-       nop 
     end
 end
 

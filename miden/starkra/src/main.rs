@@ -57,18 +57,18 @@ fn load_execution_trace(path: &str) -> (Vec<(Word, Vec<Felt>)>, Felt, Felt) {
     (advice_map, start, end)
 }
 
-fn load_cfg(path: &str) -> Vec<(Word, Vec<Felt>)>{
-
-    let cfg = Vec::new();
-
-    cfg.push((
-        Word::new([Felt::new(0), Felt::new(0), Felt::new(0), Felt::new(0)]),
-        vec![Felt::new(0x0), Felt::new(0x1)],
-    ));
-
-
-    cfg
-}
+// fn load_cfg(path: &str) -> Vec<(Word, Vec<Felt>)>{
+//
+//     let cfg = Vec::new();
+//
+//     cfg.push((
+//         Word::new([Felt::new(0), Felt::new(0), Felt::new(0), Felt::new(0)]),
+//         vec![Felt::new(0x0), Felt::new(0x1)],
+//     ));
+//
+//
+//     cfg
+// }
 
 fn main() {
     // instantiate the assembler
