@@ -1,0 +1,5 @@
+True
+Execution time:  462.9971396923065
+Execution time verif:  30.62657642364502
+Execution time pre:  9.357375144958496
+Size of the proof:  2364587

@@ -1,0 +1,35 @@
+Loading CFG from:  ../ZEKRA-STARK/embench-iot-applications/nettle-aes/numified_adjlist
+Loading execution trace from:  ../ZEKRA-STARK/embench-iot-applications/nettle-aes/numified_path
+Tracing...
+Generating boundary constraints...
+Setting up STARK...
+Generating AIR...
+Preprocessing...
+Execution time pre:  1.9442200660705566
+Generating proof...
+randomize
+interpolate
+boundary quotients
+commit boundary quotients
+transition constraints
+transition quotients
+randomizer
+weights
+combination terms
+combine
+evaluate combination
+fri prove
+process indices
+open boundary quotients
+open randomizer
+open transition zerofier
+serialize proof
+Execution time:  140.3185362815857
+Verifying proof...
+Execution time verif:  29.558818817138672
+Verdict: 
+True
+Execution time:  140.3185362815857
+Execution time verif:  29.558818817138672
+Execution time pre:  1.9442200660705566
+Size of the proof:  2627426
