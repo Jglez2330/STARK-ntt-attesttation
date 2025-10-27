@@ -17,7 +17,7 @@ class FastStark:
         self.num_colinearity_checks = num_colinearity_checks
         self.security_level = security_level
 
-        self.num_randomizers = 4*num_colinearity_checks
+        self.num_randomizers = 1
 
         self.num_registers = num_registers
         self.original_trace_length = num_cycles
