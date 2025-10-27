@@ -1,0 +1,10 @@
+[package]
+name = "starkra"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+miden = "0.6.0"
+miden-core = "0.18.2"
+miden-processor = "0.18.2"
+miden-vm = "0.18.2"

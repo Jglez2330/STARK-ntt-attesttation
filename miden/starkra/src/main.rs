@@ -7,6 +7,7 @@ use miden_vm::{
 };
 use std::fs;
 use std::sync::Arc;
+use std::time::Instant;
 
 fn load_execution_trace(path: &str) -> (Vec<(Word, Vec<Felt>)>, Felt, Felt) {
     // In a real scenario, you would load the execution trace from a file or other source.
@@ -24,7 +25,7 @@ fn load_execution_trace(path: &str) -> (Vec<(Word, Vec<Felt>)>, Felt, Felt) {
     let call = Felt::new(1);
     let ret = Felt::new(2);
     let start = Felt::new(0);
-    let end = Felt::new(10);
+    let end = Felt::new(0x10);
 
     let mut advice_map = Vec::new();
 
@@ -34,13 +35,13 @@ fn load_execution_trace(path: &str) -> (Vec<(Word, Vec<Felt>)>, Felt, Felt) {
     ));
     advice_map.push((
         Word::new([Felt::new(256), Felt::new(0), Felt::new(0), Felt::new(1)]),
-        vec![Felt::new(0x2), Felt::new(0x10)],
+        vec![Felt::new(0x2), Felt::new(0x11)],
     ));
     advice_map.push((
         Word::new([Felt::new(256), Felt::new(0), Felt::new(0), Felt::new(2)]),
-        vec![Felt::new(0x10)],
+        vec![Felt::new(0x11)],
     ));
-    //
+
     advice_map.push((
         Word::new([Felt::new(256), Felt::new(256), Felt::new(0), Felt::new(0)]),
         vec![jmp],
@@ -71,7 +72,7 @@ fn load_cfg(path: &str) -> Vec<(Word, Vec<Felt>)>{
     ));
     cfg.push((
         Word::new([Felt::new(0), Felt::new(0), Felt::new(0), Felt::new(2)]),
-        vec![Felt::new(0x10)],
+        vec![Felt::new(0x10), Felt::new(0x11)],
     ));
 
 
@@ -97,11 +98,16 @@ fn main() {
         .assemble_program(fs::read_to_string("./src/starkra.masm").unwrap())
         .unwrap();
     // instantiate default execution options
+    // let exec_options = ExecutionOptions::default().with_debugging(true);
     let exec_options = ExecutionOptions::default();
     // instantiate a default host (with no advice inputs)
     let mut host = DefaultHost::default();
+    let trace = execute(&program, stack_values.clone(), advice_inputs.clone(), &mut host, exec_options).unwrap();
 
     // let's execute it and generate a STARK proof
+    // time proof generation
+    // #[cfg(feature = "std")]
+    let now = Instant::now();
     let (outputs, proof) = prove(
         &program,
         stack_values.clone(),
@@ -110,11 +116,13 @@ fn main() {
         ProvingOptions::default(),   // we'll be using default options
     )
     .unwrap();
-
-    // the output should be 8
-    assert_eq!(8, outputs.first().unwrap().as_int());
+    println!(
+        "Generated proof in {} ms",
+        now.elapsed().as_millis()
+    );
 
     // let's verify program execution
+    let ver_now = Instant::now();
     match verify(
         ProgramInfo::from(program.clone()),
         StackInputs::try_from_ints(vec![start.as_int(), end.as_int()]).unwrap(),
@@ -124,12 +132,16 @@ fn main() {
         Ok(_) => println!("Execution verified!"),
         Err(msg) => println!("Something went terribly wrong: {}", msg),
     }
+    println!(
+        "Verified proof in {} ms",
+        ver_now.elapsed().as_millis()
+    );
     // now, execute the same program in debug mode and iterate over VM states
     // now, execute the same program in debug mode and iterate over VM states
-    for vm_state in execute_iter(&program, stack_values, advice_inputs, &mut host) {
-        match vm_state {
-            Ok(vm_state) => println!("{:?}\n", vm_state),
-            Err(_) => println!("something went terribly wrong!"),
-        }
-    }
+    // for vm_state in execute_iter(&program, stack_values, advice_inputs, &mut host) {
+    //     match vm_state {
+    //         Ok(vm_state) => println!("{:?}\n", vm_state),
+    //         Err(_) => println!("something went terribly wrong!"),
+    //     }
+    // }
 }
