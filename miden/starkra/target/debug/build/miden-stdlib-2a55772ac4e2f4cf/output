@@ -1,0 +1,2 @@
+cargo:rerun-if-changed=asm
+cargo:rerun-if-changed=../assembly/src

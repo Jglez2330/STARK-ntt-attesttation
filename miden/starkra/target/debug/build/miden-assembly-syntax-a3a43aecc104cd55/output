@@ -1,0 +1,2 @@
+processing file `/Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/miden-assembly-syntax-0.16.4/src/parser/grammar.lalrpop`
+cargo::rustc-check-cfg=cfg(nightly)

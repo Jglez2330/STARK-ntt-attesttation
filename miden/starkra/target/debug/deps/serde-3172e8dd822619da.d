@@ -1,0 +1,12 @@
+/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/miden/starkra/target/debug/deps/serde-3172e8dd822619da.d: /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/jglez2330/Library/Mobile\ Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/miden/starkra/target/debug/build/serde-c926f19157b1c3be/out/private.rs
+
+/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/miden/starkra/target/debug/deps/libserde-3172e8dd822619da.rmeta: /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/jglez2330/Library/Mobile\ Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/miden/starkra/target/debug/build/serde-c926f19157b1c3be/out/private.rs
+
+/Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/jglez2330/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/jglez2330/Library/Mobile\ Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/miden/starkra/target/debug/build/serde-c926f19157b1c3be/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/jglez2330/Library/Mobile Documents/com~apple~CloudDocs/personal/STARK-ntt-attesttation/miden/starkra/target/debug/build/serde-c926f19157b1c3be/out

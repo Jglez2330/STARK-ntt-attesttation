@@ -1,0 +1,3 @@
+cargo:rerun-if-changed=asm
+cargo:rerun-if-env-changed=MIDEN_BUILD_STDLIB_DOCS
+cargo:rerun-if-changed=../assembly/src

@@ -1,10 +1,7 @@
 use miden_core::AdviceMap;
 use miden_processor::ExecutionOptions;
 use miden_processor::Felt;
-use miden_vm::{
-    AdviceInputs, AdviceProvider, Assembler, DefaultHost, Program, ProgramInfo, ProvingOptions,
-    StackInputs, Word, assembly::DefaultSourceManager, execute, execute_iter, prove, verify,
-};
+use miden_vm::{AdviceInputs, AdviceProvider, Assembler, DefaultHost, Program, ProgramInfo, ProvingOptions, StackInputs, Word, assembly::DefaultSourceManager, execute, execute_iter, prove, verify, HashFunction};
 use std::fs;
 use std::fs::read_to_string;
 use std::sync::Arc;
@@ -266,7 +263,7 @@ fn main() {
         stack_values.clone(),
         advice_inputs.clone(),
         &mut DefaultHost::default(), // we'll be using a default host
-        ProvingOptions::default(),   // we'll be using default options
+        ProvingOptions::with_128_bit_security( HashFunction::Blake3_256),   // we'll be using default options
     )
     .unwrap();
     println!("Generated proof in {} ms", now.elapsed().as_millis());
