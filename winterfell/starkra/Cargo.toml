@@ -1,0 +1,12 @@
+[package]
+name = "starkra"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+winterfell = { version = "0.13.1", features = ["concurrent"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.20"
+hex = "0.4.3"
+blake3 = "1.8.2"
+log = "0.4.28"

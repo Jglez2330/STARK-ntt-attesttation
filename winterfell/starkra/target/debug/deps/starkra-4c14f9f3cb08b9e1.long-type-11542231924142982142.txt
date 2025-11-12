@@ -1,0 +1,2 @@
+DefaultConstraintCommitment<E, Blake3_256<winterfell::winter_math::fields::f64::BaseElement>, MerkleTree<Blake3_256<winterfell::winter_math::fields::f64::BaseElement>>>
+DefaultConstraintCommitment<E, Blake3_256<winterfell::winter_math::fields::f64::BaseElement>, MerkleTree<Blake3_256<winterfell::winter_math::fields::f64::BaseElement>>>: ConstraintEvaluator<E>

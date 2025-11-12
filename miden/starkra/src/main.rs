@@ -222,53 +222,57 @@ fn load_cfg(path: &str) -> Vec<(Word, Vec<Felt>)> {
     cfg
 }
 
+use std::env;
+// --- your includes unchanged above ---
+
 fn main() {
+    // Read args: <binary> <trace> <cfg> <asm>
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() != 4 {
+        eprintln!("Usage: {} <trace_file> <cfg_file> <program.masm>", args[0]);
+        std::process::exit(1);
+    }
+
+    let trace_file = &args[1];
+    let cfg_file = &args[2];
+    let asm_file = &args[3];
+
+    println!("Trace file: {}", trace_file);
+    println!("CFG file:   {}", cfg_file);
+    println!("Program:    {}", asm_file);
+
     // instantiate the assembler
     let mut assembler = Assembler::default().with_debug_mode(true);
 
-    // load an execution trace from a file
-    // the trace contains the sequence of jumps, calls and returns
-    // As well as the start and end addresses
-    let (trace, start, end) = load_execution_trace("./src/num_path");
-    let cfg = load_cfg("./src/adj_list");
+    // load execution trace & CFG
+    let (trace, start, end) = load_execution_trace(trace_file);
+    let cfg = load_cfg(cfg_file);
 
     let mut advice_inputs = AdviceInputs::default().with_map(trace.clone());
     let advice_inputs = advice_inputs.with_map(cfg.clone());
-    let mut stack_values = StackInputs::try_from_ints(vec![start.as_int(), end.as_int()]).unwrap();
+    let stack_values =
+        StackInputs::try_from_ints(vec![start.as_int(), end.as_int()]).unwrap();
 
-    // this is our program, we compile it from assembly code
+    // load & assemble program
+    let program_source = fs::read_to_string(asm_file)
+        .expect("Failed to read .masm file");
     let program = assembler
-        .assemble_program(fs::read_to_string("./src/starkra.masm").unwrap())
+        .assemble_program(program_source)
         .unwrap();
-    // instantiate default execution options
-    let exec_options = ExecutionOptions::default().with_debugging(true);
-    // let exec_options = ExecutionOptions::default();
-    // instantiate a default host (with no advice inputs)
-    let mut host = DefaultHost::default();
-    let trace = execute(
-        &program,
-        stack_values.clone(),
-        advice_inputs.clone(),
-        &mut host,
-        exec_options,
-    )
-    .unwrap();
-
-    // let's execute it and generate a STARK proof
-    // time proof generation
-    // #[cfg(feature = "std")]
+    // prove
     let now = Instant::now();
     let (outputs, proof) = prove(
         &program,
         stack_values.clone(),
         advice_inputs.clone(),
-        &mut DefaultHost::default(), // we'll be using a default host
-        ProvingOptions::with_128_bit_security( HashFunction::Blake3_256),   // we'll be using default options
+        &mut DefaultHost::default(),
+        ProvingOptions::with_128_bit_security(HashFunction::Blake3_256),
     )
-    .unwrap();
+        .unwrap();
     println!("Generated proof in {} ms", now.elapsed().as_millis());
 
-    // let's verify program execution
+    // verify
     let ver_now = Instant::now();
     match verify(
         ProgramInfo::from(program.clone()),
@@ -280,12 +284,4 @@ fn main() {
         Err(msg) => println!("Something went terribly wrong: {}", msg),
     }
     println!("Verified proof in {} ms", ver_now.elapsed().as_millis());
-    // now, execute the same program in debug mode and iterate over VM states
-    // now, execute the same program in debug mode and iterate over VM states
-    // for vm_state in execute_iter(&program, stack_values, advice_inputs, &mut host) {
-    //     match vm_state {
-    //         Ok(vm_state) => println!("{:?}\n", vm_state),
-    //         Err(_) => println!("something went terribly wrong!"),
-    //     }
-    // }
 }
